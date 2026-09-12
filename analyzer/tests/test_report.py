@@ -39,16 +39,22 @@ class ReportTests(unittest.TestCase):
         self.assertIn('"score_priority_mapped": "high"', payload)
         self.assertIn('"description":', payload)
         self.assertIn('"recommendation":', payload)
+        self.assertIn('"business_impact":', payload)
+        self.assertIn('"technical_impact":', payload)
 
     def test_markdown_has_business_sections_and_full_traceability(self):
         markdown = render_markdown([self.make_result()])
         for heading in (
             "## Resumo executivo", "## Principais problemas", "## Plano de ação",
             "## Origem das recomendações", "## Limitações", "## Grupos e evidências",
+            "## Como interpretar o scoring",
         ):
             self.assertIn(heading, markdown)
         self.assertIn("evidence_count", markdown)
         self.assertIn("bandit, semgrep", markdown)
+        self.assertIn("Impacto de negócio", markdown)
+        self.assertIn("| high |", markdown)
+        self.assertIn("Prioridade V1", markdown)
         self.assertNotIn("O que a IA sugeriu", markdown)
 
 

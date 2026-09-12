@@ -9,6 +9,7 @@ from pathlib import Path
 from classification import classify_groups
 from deduplication import deduplicate_findings
 from detectors.python import parse_bandit, parse_pylint, parse_radon, parse_semgrep
+from detectors.php import parse_phpmetrics, parse_phpstan
 from report import render_json, render_markdown
 from scoring import score_groups
 from ai_report import generate_ai_report
@@ -17,12 +18,17 @@ from ai_report import generate_ai_report
 def load_findings(output_dir: Path):
     """Load normalized findings from detector JSONs without changing them."""
 
-    return [
+    findings = [
         *parse_bandit(_read_json(output_dir / "bandit.json")),
         *parse_semgrep(_read_json(output_dir / "semgrep-python.json")),
         *parse_pylint(_read_json(output_dir / "pylint.json")),
         *parse_radon(_read_json(output_dir / "radon-cc.json")),
     ]
+    if (output_dir / "phpstan.json").exists():
+        findings.extend(parse_phpstan(_read_json(output_dir / "phpstan.json")))
+    if (output_dir / "phpmetrics.json").exists():
+        findings.extend(parse_phpmetrics(_read_json(output_dir / "phpmetrics.json")))
+    return findings
 
 
 def run(output_dir: Path, report_dir: Path):
