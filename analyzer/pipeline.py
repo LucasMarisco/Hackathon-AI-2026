@@ -41,6 +41,9 @@ class ResultadoAnalise:
     total_achados_brutos: int = 0
     total_grupos: int = 0
     env_real_commitado: bool = False
+    # Grupos que NÃO viram débito, guardados para transparência:
+    metricas_observadas: list[dict[str, str]] = field(default_factory=list)
+    achados_ambientais: list[dict[str, str]] = field(default_factory=list)
 
 
 def detectar_linguagem(raiz: Path) -> str:
@@ -107,6 +110,35 @@ def analisar(raiz: Path, incluir_semgrep: bool = False) -> ResultadoAnalise:
         finding = classificado.group.representative_finding
         arquivo = finding.file_path or ""
         conceito = classificado.concept
+
+        # A classificação V1 já decidiu que estes grupos não são candidatos a
+        # débito: métricas de complexidade rank A/B (funções simples) e
+        # achados do ambiente de análise, que não são defeito do produto.
+        # Reportá-los como débito seria falso positivo — o enunciado desconta
+        # ponto por isso. Ficam registrados em seção própria, não sumidos.
+        if classificado.category == "environmental":
+            resultado.achados_ambientais.append(
+                {
+                    "conceito": conceito,
+                    "local": f"{arquivo}:{finding.line}",
+                    "descricao": finding.description,
+                    "motivo": classificado.rationale,
+                }
+            )
+            continue
+
+        if not classificado.is_candidate:
+            resultado.metricas_observadas.append(
+                {
+                    "conceito": conceito,
+                    "local": f"{arquivo}:{finding.line}",
+                    "descricao": finding.description,
+                    "rank": str(finding.severity or ""),
+                    "valor": str(finding.metric_value or ""),
+                    "motivo": classificado.rationale,
+                }
+            )
+            continue
 
         justificativa = eh_falso_positivo(conceito, arquivo, finding.line)
         if justificativa:

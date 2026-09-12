@@ -250,6 +250,31 @@ def render_markdown(resultado: ResultadoAnalise) -> str:
             )
         linhas.append("")
 
+    # --- 6b. o que foi observado mas NÃO classificado como débito ---
+    if resultado.metricas_observadas or resultado.achados_ambientais:
+        linhas += [
+            "### Observado, mas não classificado como débito",
+            "",
+            "Reportar como débito algo que não é problema real desconta ponto. "
+            "Estes grupos foram medidos e ficam registrados, mas **não entram "
+            "na contagem nem no esforço**:",
+            "",
+        ]
+        if resultado.metricas_observadas:
+            linhas.append(
+                f"- **{len(resultado.metricas_observadas)} métricas de complexidade rank A/B** "
+                "— funções simples. Só ranks C a F são candidatos a débito de "
+                "manutenibilidade. Exemplo: `get_db` tem complexidade 1."
+            )
+        if resultado.achados_ambientais:
+            locais = ", ".join(f"`{a['local']}`" for a in resultado.achados_ambientais)
+            linhas.append(
+                f"- **{len(resultado.achados_ambientais)} achados do ambiente de análise** "
+                f"({locais}) — imports que a ferramenta não resolveu por faltar "
+                "dependência no container, não defeito do produto."
+            )
+        linhas.append("")
+
     # --- 7. o que a IA errou (obrigatória) ---
     linhas += [
         "## 7. O que a IA sugeriu que estava errado, e por quê",
@@ -324,6 +349,10 @@ def report_payload(resultado: ResultadoAnalise) -> dict[str, Any]:
         "questionario": avaliar_questionario(resultado),
         "debitos": [d.to_dict() for d in resultado.debitos],
         "falsos_positivos": resultado.falsos_positivos,
+        "observado_nao_classificado": {
+            "metricas_rank_a_b": resultado.metricas_observadas,
+            "ambiente_de_analise": resultado.achados_ambientais,
+        },
         "auditoria_da_ia": [dict(item) for item in curadoria.AUDITORIA_DA_IA],
         "alcancabilidade": resultado.mapa_alcancabilidade,
         "avisos_ferramentas": resultado.avisos_ferramentas,

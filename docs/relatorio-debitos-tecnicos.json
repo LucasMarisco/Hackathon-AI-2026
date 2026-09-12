@@ -389,33 +389,6 @@
       "valor": "Disponibilidade — protege o uptime de 99,1%"
     },
     {
-      "alcancavel": true,
-      "arquivo": "app/everything.py",
-      "categoria": "Arquitetura",
-      "conceito": "import_error",
-      "descricao": "Unable to import 'flask'",
-      "esforco_sp": 0.5,
-      "ferramentas": [
-        "pylint"
-      ],
-      "id": "DT-12",
-      "impacto": "Sinal de ambiente de análise incompleto, não de defeito do produto. Verificar antes de reportar ao cliente.",
-      "linha": 2,
-      "memorial": [
-        "base técnica (medio) = 4.00",
-        "x rota pública sem auth (1.3) = 5.20",
-        "+ caminho da release v2.1 (1.5) = 6.70",
-        "- esforço 0.5 SP (0.40) = 6.30"
-      ],
-      "nome": "Import não resolvido no ambiente de análise",
-      "perguntas_questionario": [],
-      "pontuacao": 6.3,
-      "prioridade": "Média",
-      "prioridade_tecnica": "medio",
-      "risco": "Médio",
-      "valor": "Higiene do ambiente de análise"
-    },
-    {
       "alcancavel": false,
       "arquivo": "app/services/notification_service.py",
       "categoria": "Segurança",
@@ -425,7 +398,7 @@
       "ferramentas": [
         "bandit"
       ],
-      "id": "DT-13",
+      "id": "DT-12",
       "impacto": "Credencial de produção exposta no código e no histórico do Git. Responder 'Não' à pergunta 4 do questionário trava a assinatura do contrato enterprise; apagar o arquivo não basta, exige rotação.",
       "linha": 10,
       "memorial": [
@@ -454,7 +427,7 @@
       "ferramentas": [
         "bandit"
       ],
-      "id": "DT-14",
+      "id": "DT-13",
       "impacto": "Credencial de produção exposta no código e no histórico do Git. Responder 'Não' à pergunta 4 do questionário trava a assinatura do contrato enterprise; apagar o arquivo não basta, exige rotação.",
       "linha": 15,
       "memorial": [
@@ -483,7 +456,7 @@
       "ferramentas": [
         "pylint"
       ],
-      "id": "DT-15",
+      "id": "DT-14",
       "impacto": "Aumenta o custo de manutenção de um time de 2 desenvolvedores com capacidade de 6 story points por semana e sem QA.",
       "linha": 76,
       "memorial": [
@@ -510,7 +483,7 @@
       "ferramentas": [
         "pylint"
       ],
-      "id": "DT-16",
+      "id": "DT-15",
       "impacto": "Aumenta o custo de manutenção de um time de 2 desenvolvedores com capacidade de 6 story points por semana e sem QA.",
       "linha": 77,
       "memorial": [
@@ -537,7 +510,7 @@
       "ferramentas": [
         "pylint"
       ],
-      "id": "DT-17",
+      "id": "DT-16",
       "impacto": "Aumenta o custo de manutenção de um time de 2 desenvolvedores com capacidade de 6 story points por semana e sem QA.",
       "linha": 78,
       "memorial": [
@@ -564,7 +537,7 @@
       "ferramentas": [
         "pylint"
       ],
-      "id": "DT-18",
+      "id": "DT-17",
       "impacto": "Aumenta o custo de manutenção de um time de 2 desenvolvedores com capacidade de 6 story points por semana e sem QA.",
       "linha": 79,
       "memorial": [
@@ -591,7 +564,7 @@
       "ferramentas": [
         "pylint"
       ],
-      "id": "DT-19",
+      "id": "DT-18",
       "impacto": "Aumenta o custo de manutenção de um time de 2 desenvolvedores com capacidade de 6 story points por semana e sem QA.",
       "linha": 83,
       "memorial": [
@@ -618,7 +591,7 @@
       "ferramentas": [
         "pylint"
       ],
-      "id": "DT-20",
+      "id": "DT-19",
       "impacto": "Aumenta o custo de manutenção de um time de 2 desenvolvedores com capacidade de 6 story points por semana e sem QA.",
       "linha": 196,
       "memorial": [
@@ -646,7 +619,7 @@
         "bandit",
         "pylint"
       ],
-      "id": "DT-21",
+      "id": "DT-20",
       "impacto": "Chamada externa sem timeout prende o processo. Com 1 VPS de 2GB atendendo 180 usuários e sem monitoramento, a queda só é descoberta quando o cliente liga.",
       "linha": 116,
       "memorial": [
@@ -673,7 +646,7 @@
       "ferramentas": [
         "pylint"
       ],
-      "id": "DT-22",
+      "id": "DT-21",
       "impacto": "Aumenta o custo de manutenção de um time de 2 desenvolvedores com capacidade de 6 story points por semana e sem QA.",
       "linha": 40,
       "memorial": [
@@ -692,33 +665,6 @@
     },
     {
       "alcancavel": false,
-      "arquivo": "app/routes/report_routes.py",
-      "categoria": "Arquitetura",
-      "conceito": "import_error",
-      "descricao": "Unable to import 'flask'",
-      "esforco_sp": 0.5,
-      "ferramentas": [
-        "pylint"
-      ],
-      "id": "DT-23",
-      "impacto": "Sinal de ambiente de análise incompleto, não de defeito do produto. Verificar antes de reportar ao cliente.",
-      "linha": 5,
-      "memorial": [
-        "base técnica (medio) = 4.00",
-        "x código morto (0.35) = 1.40",
-        "+ caminho da release v2.1 (1.5) = 2.90",
-        "- esforço 0.5 SP (0.40) = 2.50"
-      ],
-      "nome": "Import não resolvido no ambiente de análise",
-      "perguntas_questionario": [],
-      "pontuacao": 2.5,
-      "prioridade": "Baixa",
-      "prioridade_tecnica": "medio",
-      "risco": "Baixo",
-      "valor": "Higiene do ambiente de análise"
-    },
-    {
-      "alcancavel": false,
       "arquivo": "app/services/notification_service.py",
       "categoria": "Performance",
       "conceito": "missing_timeout",
@@ -728,7 +674,7 @@
         "bandit",
         "pylint"
       ],
-      "id": "DT-24",
+      "id": "DT-22",
       "impacto": "Chamada externa sem timeout prende o processo. Com 1 VPS de 2GB atendendo 180 usuários e sem monitoramento, a queda só é descoberta quando o cliente liga.",
       "linha": 44,
       "memorial": [
@@ -755,7 +701,7 @@
         "bandit",
         "pylint"
       ],
-      "id": "DT-25",
+      "id": "DT-23",
       "impacto": "Chamada externa sem timeout prende o processo. Com 1 VPS de 2GB atendendo 180 usuários e sem monitoramento, a queda só é descoberta quando o cliente liga.",
       "linha": 53,
       "memorial": [
@@ -781,7 +727,7 @@
       "ferramentas": [
         "pylint"
       ],
-      "id": "DT-26",
+      "id": "DT-24",
       "impacto": "Aumenta o custo de manutenção de um time de 2 desenvolvedores com capacidade de 6 story points por semana e sem QA.",
       "linha": 60,
       "memorial": [
@@ -803,122 +749,14 @@
       "arquivo": "app/everything.py",
       "categoria": "Manutenibilidade",
       "conceito": "cyclomatic_complexity",
-      "descricao": "Cyclomatic complexity for get_db: 1 (rank A)",
-      "esforco_sp": 3.0,
-      "ferramentas": [
-        "radon"
-      ],
-      "id": "DT-27",
-      "impacto": "Função complexa demais para alterar com segurança. O desenvolvedor que escreveu 90% do código sai em 6 semanas, e não há testes nem staging — o conhecimento sai junto com ele.",
-      "linha": 31,
-      "memorial": [
-        "base técnica (baixo) = 2.00",
-        "x rota pública sem auth (1.3) = 2.60",
-        "+ caminho da release v2.1 (1.5) = 4.10",
-        "- esforço 3.0 SP (2.40) = 1.70"
-      ],
-      "nome": "Função com complexidade ciclomática alta",
-      "perguntas_questionario": [],
-      "pontuacao": 1.7,
-      "prioridade": "Baixa",
-      "prioridade_tecnica": "baixo",
-      "risco": "Baixo",
-      "valor": "Manutenibilidade — reduz o risco da saída do dev em 6 semanas"
-    },
-    {
-      "alcancavel": true,
-      "arquivo": "app/everything.py",
-      "categoria": "Manutenibilidade",
-      "conceito": "cyclomatic_complexity",
       "descricao": "Cyclomatic complexity for dashboard: 16 (rank C)",
       "esforco_sp": 3.0,
       "ferramentas": [
         "radon"
       ],
-      "id": "DT-28",
+      "id": "DT-25",
       "impacto": "Função complexa demais para alterar com segurança. O desenvolvedor que escreveu 90% do código sai em 6 semanas, e não há testes nem staging — o conhecimento sai junto com ele.",
       "linha": 40,
-      "memorial": [
-        "base técnica (baixo) = 2.00",
-        "x rota pública sem auth (1.3) = 2.60",
-        "+ caminho da release v2.1 (1.5) = 4.10",
-        "- esforço 3.0 SP (2.40) = 1.70"
-      ],
-      "nome": "Função com complexidade ciclomática alta",
-      "perguntas_questionario": [],
-      "pontuacao": 1.7,
-      "prioridade": "Baixa",
-      "prioridade_tecnica": "baixo",
-      "risco": "Baixo",
-      "valor": "Manutenibilidade — reduz o risco da saída do dev em 6 semanas"
-    },
-    {
-      "alcancavel": true,
-      "arquivo": "app/everything.py",
-      "categoria": "Manutenibilidade",
-      "conceito": "cyclomatic_complexity",
-      "descricao": "Cyclomatic complexity for save: 6 (rank B)",
-      "esforco_sp": 3.0,
-      "ferramentas": [
-        "radon"
-      ],
-      "id": "DT-29",
-      "impacto": "Função complexa demais para alterar com segurança. O desenvolvedor que escreveu 90% do código sai em 6 semanas, e não há testes nem staging — o conhecimento sai junto com ele.",
-      "linha": 153,
-      "memorial": [
-        "base técnica (baixo) = 2.00",
-        "x rota pública sem auth (1.3) = 2.60",
-        "+ caminho da release v2.1 (1.5) = 4.10",
-        "- esforço 3.0 SP (2.40) = 1.70"
-      ],
-      "nome": "Função com complexidade ciclomática alta",
-      "perguntas_questionario": [],
-      "pontuacao": 1.7,
-      "prioridade": "Baixa",
-      "prioridade_tecnica": "baixo",
-      "risco": "Baixo",
-      "valor": "Manutenibilidade — reduz o risco da saída do dev em 6 semanas"
-    },
-    {
-      "alcancavel": true,
-      "arquivo": "app/everything.py",
-      "categoria": "Manutenibilidade",
-      "conceito": "cyclomatic_complexity",
-      "descricao": "Cyclomatic complexity for delete: 1 (rank A)",
-      "esforco_sp": 3.0,
-      "ferramentas": [
-        "radon"
-      ],
-      "id": "DT-30",
-      "impacto": "Função complexa demais para alterar com segurança. O desenvolvedor que escreveu 90% do código sai em 6 semanas, e não há testes nem staging — o conhecimento sai junto com ele.",
-      "linha": 196,
-      "memorial": [
-        "base técnica (baixo) = 2.00",
-        "x rota pública sem auth (1.3) = 2.60",
-        "+ caminho da release v2.1 (1.5) = 4.10",
-        "- esforço 3.0 SP (2.40) = 1.70"
-      ],
-      "nome": "Função com complexidade ciclomática alta",
-      "perguntas_questionario": [],
-      "pontuacao": 1.7,
-      "prioridade": "Baixa",
-      "prioridade_tecnica": "baixo",
-      "risco": "Baixo",
-      "valor": "Manutenibilidade — reduz o risco da saída do dev em 6 semanas"
-    },
-    {
-      "alcancavel": true,
-      "arquivo": "app/everything.py",
-      "categoria": "Manutenibilidade",
-      "conceito": "cyclomatic_complexity",
-      "descricao": "Cyclomatic complexity for report: 3 (rank A)",
-      "esforco_sp": 3.0,
-      "ferramentas": [
-        "radon"
-      ],
-      "id": "DT-31",
-      "impacto": "Função complexa demais para alterar com segurança. O desenvolvedor que escreveu 90% do código sai em 6 semanas, e não há testes nem staging — o conhecimento sai junto com ele.",
-      "linha": 211,
       "memorial": [
         "base técnica (baixo) = 2.00",
         "x rota pública sem auth (1.3) = 2.60",
@@ -943,7 +781,7 @@
       "ferramentas": [
         "pylint"
       ],
-      "id": "DT-32",
+      "id": "DT-26",
       "impacto": "Aumenta o custo de manutenção de um time de 2 desenvolvedores com capacidade de 6 story points por semana e sem QA.",
       "linha": 127,
       "memorial": [
@@ -970,7 +808,7 @@
       "ferramentas": [
         "bandit"
       ],
-      "id": "DT-33",
+      "id": "DT-27",
       "impacto": "Falha silenciosa: a fatura é calculada e não é gravada, sem ninguém saber. Sem monitoramento, o erro aparece na contestação do cliente.",
       "linha": 127,
       "memorial": [
@@ -997,7 +835,7 @@
       "ferramentas": [
         "pylint"
       ],
-      "id": "DT-34",
+      "id": "DT-28",
       "impacto": "Aumenta o custo de manutenção de um time de 2 desenvolvedores com capacidade de 6 story points por semana e sem QA.",
       "linha": 77,
       "memorial": [
@@ -1024,7 +862,7 @@
       "ferramentas": [
         "bandit"
       ],
-      "id": "DT-35",
+      "id": "DT-29",
       "impacto": "Falha silenciosa: a fatura é calculada e não é gravada, sem ninguém saber. Sem monitoramento, o erro aparece na contestação do cliente.",
       "linha": 77,
       "memorial": [
@@ -1051,7 +889,7 @@
       "ferramentas": [
         "pylint"
       ],
-      "id": "DT-36",
+      "id": "DT-30",
       "impacto": "Aumenta o custo de manutenção de um time de 2 desenvolvedores com capacidade de 6 story points por semana e sem QA.",
       "linha": 18,
       "memorial": [
@@ -1076,7 +914,7 @@
       "ferramentas": [
         "pylint"
       ],
-      "id": "DT-37",
+      "id": "DT-31",
       "impacto": "Aumenta o custo de manutenção de um time de 2 desenvolvedores com capacidade de 6 story points por semana e sem QA.",
       "linha": 25,
       "memorial": [
@@ -1101,7 +939,7 @@
       "ferramentas": [
         "pylint"
       ],
-      "id": "DT-38",
+      "id": "DT-32",
       "impacto": "Aumenta o custo de manutenção de um time de 2 desenvolvedores com capacidade de 6 story points por semana e sem QA.",
       "linha": 72,
       "memorial": [
@@ -1126,7 +964,7 @@
       "ferramentas": [
         "bandit"
       ],
-      "id": "DT-39",
+      "id": "DT-33",
       "impacto": "Falha silenciosa: a fatura é calculada e não é gravada, sem ninguém saber. Sem monitoramento, o erro aparece na contestação do cliente.",
       "linha": 72,
       "memorial": [
@@ -1151,7 +989,7 @@
       "ferramentas": [
         "pylint"
       ],
-      "id": "DT-40",
+      "id": "DT-34",
       "impacto": "Aumenta o custo de manutenção de um time de 2 desenvolvedores com capacidade de 6 story points por semana e sem QA.",
       "linha": 77,
       "memorial": [
@@ -1176,7 +1014,7 @@
       "ferramentas": [
         "pylint"
       ],
-      "id": "DT-41",
+      "id": "DT-35",
       "impacto": "Aumenta o custo de manutenção de um time de 2 desenvolvedores com capacidade de 6 story points por semana e sem QA.",
       "linha": 85,
       "memorial": [
@@ -1201,7 +1039,7 @@
       "ferramentas": [
         "pylint"
       ],
-      "id": "DT-42",
+      "id": "DT-36",
       "impacto": "Aumenta o custo de manutenção de um time de 2 desenvolvedores com capacidade de 6 story points por semana e sem QA.",
       "linha": 15,
       "memorial": [
@@ -1227,7 +1065,7 @@
       "ferramentas": [
         "pylint"
       ],
-      "id": "DT-43",
+      "id": "DT-37",
       "impacto": "Aumenta o custo de manutenção de um time de 2 desenvolvedores com capacidade de 6 story points por semana e sem QA.",
       "linha": 65,
       "memorial": [
@@ -1253,7 +1091,7 @@
       "ferramentas": [
         "pylint"
       ],
-      "id": "DT-44",
+      "id": "DT-38",
       "impacto": "Aumenta o custo de manutenção de um time de 2 desenvolvedores com capacidade de 6 story points por semana e sem QA.",
       "linha": 68,
       "memorial": [
@@ -1279,7 +1117,7 @@
       "ferramentas": [
         "pylint"
       ],
-      "id": "DT-45",
+      "id": "DT-39",
       "impacto": "Aumenta o custo de manutenção de um time de 2 desenvolvedores com capacidade de 6 story points por semana e sem QA.",
       "linha": 74,
       "memorial": [
@@ -1305,7 +1143,7 @@
       "ferramentas": [
         "pylint"
       ],
-      "id": "DT-46",
+      "id": "DT-40",
       "impacto": "Aumenta o custo de manutenção de um time de 2 desenvolvedores com capacidade de 6 story points por semana e sem QA.",
       "linha": 22,
       "memorial": [
@@ -1331,7 +1169,7 @@
       "ferramentas": [
         "pylint"
       ],
-      "id": "DT-47",
+      "id": "DT-41",
       "impacto": "Aumenta o custo de manutenção de um time de 2 desenvolvedores com capacidade de 6 story points por semana e sem QA.",
       "linha": 29,
       "memorial": [
@@ -1357,7 +1195,7 @@
       "ferramentas": [
         "pylint"
       ],
-      "id": "DT-48",
+      "id": "DT-42",
       "impacto": "Aumenta o custo de manutenção de um time de 2 desenvolvedores com capacidade de 6 story points por semana e sem QA.",
       "linha": 88,
       "memorial": [
@@ -1383,7 +1221,7 @@
       "ferramentas": [
         "pylint"
       ],
-      "id": "DT-49",
+      "id": "DT-43",
       "impacto": "Aumenta o custo de manutenção de um time de 2 desenvolvedores com capacidade de 6 story points por semana e sem QA.",
       "linha": 57,
       "memorial": [
@@ -1409,7 +1247,7 @@
       "ferramentas": [
         "pylint"
       ],
-      "id": "DT-50",
+      "id": "DT-44",
       "impacto": "Aumenta o custo de manutenção de um time de 2 desenvolvedores com capacidade de 6 story points por semana e sem QA.",
       "linha": 40,
       "memorial": [
@@ -1435,7 +1273,7 @@
       "ferramentas": [
         "pylint"
       ],
-      "id": "DT-51",
+      "id": "DT-45",
       "impacto": "Aumenta o custo de manutenção de um time de 2 desenvolvedores com capacidade de 6 story points por semana e sem QA.",
       "linha": 49,
       "memorial": [
@@ -1461,7 +1299,7 @@
       "ferramentas": [
         "bandit"
       ],
-      "id": "DT-52",
+      "id": "DT-46",
       "impacto": "Falha silenciosa: a fatura é calculada e não é gravada, sem ninguém saber. Sem monitoramento, o erro aparece na contestação do cliente.",
       "linha": 49,
       "memorial": [
@@ -1487,7 +1325,7 @@
       "ferramentas": [
         "pylint"
       ],
-      "id": "DT-53",
+      "id": "DT-47",
       "impacto": "Aumenta o custo de manutenção de um time de 2 desenvolvedores com capacidade de 6 story points por semana e sem QA.",
       "linha": 62,
       "memorial": [
@@ -1513,7 +1351,7 @@
       "ferramentas": [
         "bandit"
       ],
-      "id": "DT-54",
+      "id": "DT-48",
       "impacto": "Falha silenciosa: a fatura é calculada e não é gravada, sem ninguém saber. Sem monitoramento, o erro aparece na contestação do cliente.",
       "linha": 62,
       "memorial": [
@@ -1539,7 +1377,7 @@
       "ferramentas": [
         "pylint"
       ],
-      "id": "DT-55",
+      "id": "DT-49",
       "impacto": "Aumenta o custo de manutenção de um time de 2 desenvolvedores com capacidade de 6 story points por semana e sem QA.",
       "linha": 81,
       "memorial": [
@@ -1565,7 +1403,7 @@
       "ferramentas": [
         "bandit"
       ],
-      "id": "DT-56",
+      "id": "DT-50",
       "impacto": "Falha silenciosa: a fatura é calculada e não é gravada, sem ninguém saber. Sem monitoramento, o erro aparece na contestação do cliente.",
       "linha": 81,
       "memorial": [
@@ -1591,7 +1429,7 @@
       "ferramentas": [
         "pylint"
       ],
-      "id": "DT-57",
+      "id": "DT-51",
       "impacto": "Aumenta o custo de manutenção de um time de 2 desenvolvedores com capacidade de 6 story points por semana e sem QA.",
       "linha": 86,
       "memorial": [
@@ -1612,66 +1450,12 @@
       "arquivo": "app/routes/report_routes.py",
       "categoria": "Manutenibilidade",
       "conceito": "cyclomatic_complexity",
-      "descricao": "Cyclomatic complexity for ReportController: 6 (rank B)",
-      "esforco_sp": 3.0,
-      "ferramentas": [
-        "radon"
-      ],
-      "id": "DT-58",
-      "impacto": "Função complexa demais para alterar com segurança. O desenvolvedor que escreveu 90% do código sai em 6 semanas, e não há testes nem staging — o conhecimento sai junto com ele.",
-      "linha": 13,
-      "memorial": [
-        "base técnica (baixo) = 2.00",
-        "x código morto (0.35) = 0.70",
-        "+ caminho da release v2.1 (1.5) = 2.20",
-        "- esforço 3.0 SP (2.40) = -0.20"
-      ],
-      "nome": "Função com complexidade ciclomática alta",
-      "perguntas_questionario": [],
-      "pontuacao": -0.2,
-      "prioridade": "Baixa",
-      "prioridade_tecnica": "baixo",
-      "risco": "Baixo",
-      "valor": "Manutenibilidade — reduz o risco da saída do dev em 6 semanas"
-    },
-    {
-      "alcancavel": false,
-      "arquivo": "app/routes/report_routes.py",
-      "categoria": "Manutenibilidade",
-      "conceito": "cyclomatic_complexity",
-      "descricao": "Cyclomatic complexity for __init__: 1 (rank A)",
-      "esforco_sp": 3.0,
-      "ferramentas": [
-        "radon"
-      ],
-      "id": "DT-59",
-      "impacto": "Função complexa demais para alterar com segurança. O desenvolvedor que escreveu 90% do código sai em 6 semanas, e não há testes nem staging — o conhecimento sai junto com ele.",
-      "linha": 14,
-      "memorial": [
-        "base técnica (baixo) = 2.00",
-        "x código morto (0.35) = 0.70",
-        "+ caminho da release v2.1 (1.5) = 2.20",
-        "- esforço 3.0 SP (2.40) = -0.20"
-      ],
-      "nome": "Função com complexidade ciclomática alta",
-      "perguntas_questionario": [],
-      "pontuacao": -0.2,
-      "prioridade": "Baixa",
-      "prioridade_tecnica": "baixo",
-      "risco": "Baixo",
-      "valor": "Manutenibilidade — reduz o risco da saída do dev em 6 semanas"
-    },
-    {
-      "alcancavel": false,
-      "arquivo": "app/routes/report_routes.py",
-      "categoria": "Manutenibilidade",
-      "conceito": "cyclomatic_complexity",
       "descricao": "Cyclomatic complexity for monthly: 12 (rank C)",
       "esforco_sp": 3.0,
       "ferramentas": [
         "radon"
       ],
-      "id": "DT-60",
+      "id": "DT-52",
       "impacto": "Função complexa demais para alterar com segurança. O desenvolvedor que escreveu 90% do código sai em 6 semanas, e não há testes nem staging — o conhecimento sai junto com ele.",
       "linha": 17,
       "memorial": [
@@ -1690,299 +1474,6 @@
     },
     {
       "alcancavel": false,
-      "arquivo": "app/routes/report_routes.py",
-      "categoria": "Manutenibilidade",
-      "conceito": "cyclomatic_complexity",
-      "descricao": "Cyclomatic complexity for annual: 3 (rank A)",
-      "esforco_sp": 3.0,
-      "ferramentas": [
-        "radon"
-      ],
-      "id": "DT-61",
-      "impacto": "Função complexa demais para alterar com segurança. O desenvolvedor que escreveu 90% do código sai em 6 semanas, e não há testes nem staging — o conhecimento sai junto com ele.",
-      "linha": 82,
-      "memorial": [
-        "base técnica (baixo) = 2.00",
-        "x código morto (0.35) = 0.70",
-        "+ caminho da release v2.1 (1.5) = 2.20",
-        "- esforço 3.0 SP (2.40) = -0.20"
-      ],
-      "nome": "Função com complexidade ciclomática alta",
-      "perguntas_questionario": [],
-      "pontuacao": -0.2,
-      "prioridade": "Baixa",
-      "prioridade_tecnica": "baixo",
-      "risco": "Baixo",
-      "valor": "Manutenibilidade — reduz o risco da saída do dev em 6 semanas"
-    },
-    {
-      "alcancavel": false,
-      "arquivo": "app/routes/report_routes.py",
-      "categoria": "Manutenibilidade",
-      "conceito": "cyclomatic_complexity",
-      "descricao": "Cyclomatic complexity for export_for_accounting: 3 (rank A)",
-      "esforco_sp": 3.0,
-      "ferramentas": [
-        "radon"
-      ],
-      "id": "DT-62",
-      "impacto": "Função complexa demais para alterar com segurança. O desenvolvedor que escreveu 90% do código sai em 6 semanas, e não há testes nem staging — o conhecimento sai junto com ele.",
-      "linha": 97,
-      "memorial": [
-        "base técnica (baixo) = 2.00",
-        "x código morto (0.35) = 0.70",
-        "+ caminho da release v2.1 (1.5) = 2.20",
-        "- esforço 3.0 SP (2.40) = -0.20"
-      ],
-      "nome": "Função com complexidade ciclomática alta",
-      "perguntas_questionario": [],
-      "pontuacao": -0.2,
-      "prioridade": "Baixa",
-      "prioridade_tecnica": "baixo",
-      "risco": "Baixo",
-      "valor": "Manutenibilidade — reduz o risco da saída do dev em 6 semanas"
-    },
-    {
-      "alcancavel": false,
-      "arquivo": "app/routes/report_routes.py",
-      "categoria": "Manutenibilidade",
-      "conceito": "cyclomatic_complexity",
-      "descricao": "Cyclomatic complexity for monthly: 1 (rank A)",
-      "esforco_sp": 3.0,
-      "ferramentas": [
-        "radon"
-      ],
-      "id": "DT-63",
-      "impacto": "Função complexa demais para alterar com segurança. O desenvolvedor que escreveu 90% do código sai em 6 semanas, e não há testes nem staging — o conhecimento sai junto com ele.",
-      "linha": 137,
-      "memorial": [
-        "base técnica (baixo) = 2.00",
-        "x código morto (0.35) = 0.70",
-        "+ caminho da release v2.1 (1.5) = 2.20",
-        "- esforço 3.0 SP (2.40) = -0.20"
-      ],
-      "nome": "Função com complexidade ciclomática alta",
-      "perguntas_questionario": [],
-      "pontuacao": -0.2,
-      "prioridade": "Baixa",
-      "prioridade_tecnica": "baixo",
-      "risco": "Baixo",
-      "valor": "Manutenibilidade — reduz o risco da saída do dev em 6 semanas"
-    },
-    {
-      "alcancavel": false,
-      "arquivo": "app/routes/report_routes.py",
-      "categoria": "Manutenibilidade",
-      "conceito": "cyclomatic_complexity",
-      "descricao": "Cyclomatic complexity for annual: 1 (rank A)",
-      "esforco_sp": 3.0,
-      "ferramentas": [
-        "radon"
-      ],
-      "id": "DT-64",
-      "impacto": "Função complexa demais para alterar com segurança. O desenvolvedor que escreveu 90% do código sai em 6 semanas, e não há testes nem staging — o conhecimento sai junto com ele.",
-      "linha": 142,
-      "memorial": [
-        "base técnica (baixo) = 2.00",
-        "x código morto (0.35) = 0.70",
-        "+ caminho da release v2.1 (1.5) = 2.20",
-        "- esforço 3.0 SP (2.40) = -0.20"
-      ],
-      "nome": "Função com complexidade ciclomática alta",
-      "perguntas_questionario": [],
-      "pontuacao": -0.2,
-      "prioridade": "Baixa",
-      "prioridade_tecnica": "baixo",
-      "risco": "Baixo",
-      "valor": "Manutenibilidade — reduz o risco da saída do dev em 6 semanas"
-    },
-    {
-      "alcancavel": false,
-      "arquivo": "app/routes/report_routes.py",
-      "categoria": "Manutenibilidade",
-      "conceito": "cyclomatic_complexity",
-      "descricao": "Cyclomatic complexity for export_for_accounting: 1 (rank A)",
-      "esforco_sp": 3.0,
-      "ferramentas": [
-        "radon"
-      ],
-      "id": "DT-65",
-      "impacto": "Função complexa demais para alterar com segurança. O desenvolvedor que escreveu 90% do código sai em 6 semanas, e não há testes nem staging — o conhecimento sai junto com ele.",
-      "linha": 147,
-      "memorial": [
-        "base técnica (baixo) = 2.00",
-        "x código morto (0.35) = 0.70",
-        "+ caminho da release v2.1 (1.5) = 2.20",
-        "- esforço 3.0 SP (2.40) = -0.20"
-      ],
-      "nome": "Função com complexidade ciclomática alta",
-      "perguntas_questionario": [],
-      "pontuacao": -0.2,
-      "prioridade": "Baixa",
-      "prioridade_tecnica": "baixo",
-      "risco": "Baixo",
-      "valor": "Manutenibilidade — reduz o risco da saída do dev em 6 semanas"
-    },
-    {
-      "alcancavel": false,
-      "arquivo": "app/services/billing_service.py",
-      "categoria": "Manutenibilidade",
-      "conceito": "cyclomatic_complexity",
-      "descricao": "Cyclomatic complexity for BillingService: 6 (rank B)",
-      "esforco_sp": 3.0,
-      "ferramentas": [
-        "radon"
-      ],
-      "id": "DT-66",
-      "impacto": "Função complexa demais para alterar com segurança. O desenvolvedor que escreveu 90% do código sai em 6 semanas, e não há testes nem staging — o conhecimento sai junto com ele.",
-      "linha": 8,
-      "memorial": [
-        "base técnica (baixo) = 2.00",
-        "x código morto (0.35) = 0.70",
-        "+ caminho da release v2.1 (1.5) = 2.20",
-        "- esforço 3.0 SP (2.40) = -0.20"
-      ],
-      "nome": "Função com complexidade ciclomática alta",
-      "perguntas_questionario": [],
-      "pontuacao": -0.2,
-      "prioridade": "Baixa",
-      "prioridade_tecnica": "baixo",
-      "risco": "Baixo",
-      "valor": "Manutenibilidade — reduz o risco da saída do dev em 6 semanas"
-    },
-    {
-      "alcancavel": false,
-      "arquivo": "app/services/billing_service.py",
-      "categoria": "Manutenibilidade",
-      "conceito": "cyclomatic_complexity",
-      "descricao": "Cyclomatic complexity for __init__: 1 (rank A)",
-      "esforco_sp": 3.0,
-      "ferramentas": [
-        "radon"
-      ],
-      "id": "DT-67",
-      "impacto": "Função complexa demais para alterar com segurança. O desenvolvedor que escreveu 90% do código sai em 6 semanas, e não há testes nem staging — o conhecimento sai junto com ele.",
-      "linha": 9,
-      "memorial": [
-        "base técnica (baixo) = 2.00",
-        "x código morto (0.35) = 0.70",
-        "+ caminho da release v2.1 (1.5) = 2.20",
-        "- esforço 3.0 SP (2.40) = -0.20"
-      ],
-      "nome": "Função com complexidade ciclomática alta",
-      "perguntas_questionario": [],
-      "pontuacao": -0.2,
-      "prioridade": "Baixa",
-      "prioridade_tecnica": "baixo",
-      "risco": "Baixo",
-      "valor": "Manutenibilidade — reduz o risco da saída do dev em 6 semanas"
-    },
-    {
-      "alcancavel": false,
-      "arquivo": "app/services/billing_service.py",
-      "categoria": "Manutenibilidade",
-      "conceito": "cyclomatic_complexity",
-      "descricao": "Cyclomatic complexity for calculate_invoice: 10 (rank B)",
-      "esforco_sp": 3.0,
-      "ferramentas": [
-        "radon"
-      ],
-      "id": "DT-68",
-      "impacto": "Função complexa demais para alterar com segurança. O desenvolvedor que escreveu 90% do código sai em 6 semanas, e não há testes nem staging — o conhecimento sai junto com ele.",
-      "linha": 12,
-      "memorial": [
-        "base técnica (baixo) = 2.00",
-        "x código morto (0.35) = 0.70",
-        "+ caminho da release v2.1 (1.5) = 2.20",
-        "- esforço 3.0 SP (2.40) = -0.20"
-      ],
-      "nome": "Função com complexidade ciclomática alta",
-      "perguntas_questionario": [],
-      "pontuacao": -0.2,
-      "prioridade": "Baixa",
-      "prioridade_tecnica": "baixo",
-      "risco": "Baixo",
-      "valor": "Manutenibilidade — reduz o risco da saída do dev em 6 semanas"
-    },
-    {
-      "alcancavel": false,
-      "arquivo": "app/services/billing_service.py",
-      "categoria": "Manutenibilidade",
-      "conceito": "cyclomatic_complexity",
-      "descricao": "Cyclomatic complexity for generate_monthly_report: 4 (rank A)",
-      "esforco_sp": 3.0,
-      "ferramentas": [
-        "radon"
-      ],
-      "id": "DT-69",
-      "impacto": "Função complexa demais para alterar com segurança. O desenvolvedor que escreveu 90% do código sai em 6 semanas, e não há testes nem staging — o conhecimento sai junto com ele.",
-      "linha": 102,
-      "memorial": [
-        "base técnica (baixo) = 2.00",
-        "x código morto (0.35) = 0.70",
-        "+ caminho da release v2.1 (1.5) = 2.20",
-        "- esforço 3.0 SP (2.40) = -0.20"
-      ],
-      "nome": "Função com complexidade ciclomática alta",
-      "perguntas_questionario": [],
-      "pontuacao": -0.2,
-      "prioridade": "Baixa",
-      "prioridade_tecnica": "baixo",
-      "risco": "Baixo",
-      "valor": "Manutenibilidade — reduz o risco da saída do dev em 6 semanas"
-    },
-    {
-      "alcancavel": true,
-      "arquivo": "sync_data.py",
-      "categoria": "Manutenibilidade",
-      "conceito": "cyclomatic_complexity",
-      "descricao": "Cyclomatic complexity for sync_from_erp: 10 (rank B)",
-      "esforco_sp": 3.0,
-      "ferramentas": [
-        "radon"
-      ],
-      "id": "DT-70",
-      "impacto": "Função complexa demais para alterar com segurança. O desenvolvedor que escreveu 90% do código sai em 6 semanas, e não há testes nem staging — o conhecimento sai junto com ele.",
-      "linha": 18,
-      "memorial": [
-        "base técnica (baixo) = 2.00",
-        "- esforço 3.0 SP (2.40) = -0.40"
-      ],
-      "nome": "Função com complexidade ciclomática alta",
-      "perguntas_questionario": [],
-      "pontuacao": -0.4,
-      "prioridade": "Baixa",
-      "prioridade_tecnica": "baixo",
-      "risco": "Baixo",
-      "valor": "Manutenibilidade — reduz o risco da saída do dev em 6 semanas"
-    },
-    {
-      "alcancavel": true,
-      "arquivo": "sync_data.py",
-      "categoria": "Manutenibilidade",
-      "conceito": "cyclomatic_complexity",
-      "descricao": "Cyclomatic complexity for sync_from_crm: 8 (rank B)",
-      "esforco_sp": 3.0,
-      "ferramentas": [
-        "radon"
-      ],
-      "id": "DT-71",
-      "impacto": "Função complexa demais para alterar com segurança. O desenvolvedor que escreveu 90% do código sai em 6 semanas, e não há testes nem staging — o conhecimento sai junto com ele.",
-      "linha": 77,
-      "memorial": [
-        "base técnica (baixo) = 2.00",
-        "- esforço 3.0 SP (2.40) = -0.40"
-      ],
-      "nome": "Função com complexidade ciclomática alta",
-      "perguntas_questionario": [],
-      "pontuacao": -0.4,
-      "prioridade": "Baixa",
-      "prioridade_tecnica": "baixo",
-      "risco": "Baixo",
-      "valor": "Manutenibilidade — reduz o risco da saída do dev em 6 semanas"
-    },
-    {
-      "alcancavel": false,
       "arquivo": "app/helpers/date_helper.py",
       "categoria": "Manutenibilidade",
       "conceito": "excessive_returns",
@@ -1991,7 +1482,7 @@
       "ferramentas": [
         "pylint"
       ],
-      "id": "DT-72",
+      "id": "DT-53",
       "impacto": "Aumenta o custo de manutenção de um time de 2 desenvolvedores com capacidade de 6 story points por semana e sem QA.",
       "linha": 8,
       "memorial": [
@@ -2017,7 +1508,7 @@
       "ferramentas": [
         "pylint"
       ],
-      "id": "DT-73",
+      "id": "DT-54",
       "impacto": "Aumenta o custo de manutenção de um time de 2 desenvolvedores com capacidade de 6 story points por semana e sem QA.",
       "linha": 19,
       "memorial": [
@@ -2043,7 +1534,7 @@
       "ferramentas": [
         "pylint"
       ],
-      "id": "DT-74",
+      "id": "DT-55",
       "impacto": "Aumenta o custo de manutenção de um time de 2 desenvolvedores com capacidade de 6 story points por semana e sem QA.",
       "linha": 8,
       "memorial": [
@@ -2061,370 +1552,6 @@
     },
     {
       "alcancavel": false,
-      "arquivo": "app/helpers/date_helper.py",
-      "categoria": "Manutenibilidade",
-      "conceito": "cyclomatic_complexity",
-      "descricao": "Cyclomatic complexity for format_for_display: 1 (rank A)",
-      "esforco_sp": 3.0,
-      "ferramentas": [
-        "radon"
-      ],
-      "id": "DT-75",
-      "impacto": "Função complexa demais para alterar com segurança. O desenvolvedor que escreveu 90% do código sai em 6 semanas, e não há testes nem staging — o conhecimento sai junto com ele.",
-      "linha": 87,
-      "memorial": [
-        "base técnica (baixo) = 2.00",
-        "x código morto (0.35) = 0.70",
-        "- esforço 3.0 SP (2.40) = -1.70"
-      ],
-      "nome": "Função com complexidade ciclomática alta",
-      "perguntas_questionario": [],
-      "pontuacao": -1.7,
-      "prioridade": "Baixa",
-      "prioridade_tecnica": "baixo",
-      "risco": "Baixo",
-      "valor": "Manutenibilidade — reduz o risco da saída do dev em 6 semanas"
-    },
-    {
-      "alcancavel": false,
-      "arquivo": "app/helpers/date_helper.py",
-      "categoria": "Manutenibilidade",
-      "conceito": "cyclomatic_complexity",
-      "descricao": "Cyclomatic complexity for is_valid: 2 (rank A)",
-      "esforco_sp": 3.0,
-      "ferramentas": [
-        "radon"
-      ],
-      "id": "DT-76",
-      "impacto": "Função complexa demais para alterar com segurança. O desenvolvedor que escreveu 90% do código sai em 6 semanas, e não há testes nem staging — o conhecimento sai junto com ele.",
-      "linha": 91,
-      "memorial": [
-        "base técnica (baixo) = 2.00",
-        "x código morto (0.35) = 0.70",
-        "- esforço 3.0 SP (2.40) = -1.70"
-      ],
-      "nome": "Função com complexidade ciclomática alta",
-      "perguntas_questionario": [],
-      "pontuacao": -1.7,
-      "prioridade": "Baixa",
-      "prioridade_tecnica": "baixo",
-      "risco": "Baixo",
-      "valor": "Manutenibilidade — reduz o risco da saída do dev em 6 semanas"
-    },
-    {
-      "alcancavel": false,
-      "arquivo": "app/models/billing_category.py",
-      "categoria": "Manutenibilidade",
-      "conceito": "cyclomatic_complexity",
-      "descricao": "Cyclomatic complexity for BillingCategory: 4 (rank A)",
-      "esforco_sp": 3.0,
-      "ferramentas": [
-        "radon"
-      ],
-      "id": "DT-77",
-      "impacto": "Função complexa demais para alterar com segurança. O desenvolvedor que escreveu 90% do código sai em 6 semanas, e não há testes nem staging — o conhecimento sai junto com ele.",
-      "linha": 5,
-      "memorial": [
-        "base técnica (baixo) = 2.00",
-        "x código morto (0.35) = 0.70",
-        "- esforço 3.0 SP (2.40) = -1.70"
-      ],
-      "nome": "Função com complexidade ciclomática alta",
-      "perguntas_questionario": [],
-      "pontuacao": -1.7,
-      "prioridade": "Baixa",
-      "prioridade_tecnica": "baixo",
-      "risco": "Baixo",
-      "valor": "Manutenibilidade — reduz o risco da saída do dev em 6 semanas"
-    },
-    {
-      "alcancavel": false,
-      "arquivo": "app/models/billing_category.py",
-      "categoria": "Manutenibilidade",
-      "conceito": "cyclomatic_complexity",
-      "descricao": "Cyclomatic complexity for __init__: 1 (rank A)",
-      "esforco_sp": 3.0,
-      "ferramentas": [
-        "radon"
-      ],
-      "id": "DT-78",
-      "impacto": "Função complexa demais para alterar com segurança. O desenvolvedor que escreveu 90% do código sai em 6 semanas, e não há testes nem staging — o conhecimento sai junto com ele.",
-      "linha": 6,
-      "memorial": [
-        "base técnica (baixo) = 2.00",
-        "x código morto (0.35) = 0.70",
-        "- esforço 3.0 SP (2.40) = -1.70"
-      ],
-      "nome": "Função com complexidade ciclomática alta",
-      "perguntas_questionario": [],
-      "pontuacao": -1.7,
-      "prioridade": "Baixa",
-      "prioridade_tecnica": "baixo",
-      "risco": "Baixo",
-      "valor": "Manutenibilidade — reduz o risco da saída do dev em 6 semanas"
-    },
-    {
-      "alcancavel": false,
-      "arquivo": "app/models/billing_category.py",
-      "categoria": "Manutenibilidade",
-      "conceito": "cyclomatic_complexity",
-      "descricao": "Cyclomatic complexity for get_display_name: 1 (rank A)",
-      "esforco_sp": 3.0,
-      "ferramentas": [
-        "radon"
-      ],
-      "id": "DT-79",
-      "impacto": "Função complexa demais para alterar com segurança. O desenvolvedor que escreveu 90% do código sai em 6 semanas, e não há testes nem staging — o conhecimento sai junto com ele.",
-      "linha": 12,
-      "memorial": [
-        "base técnica (baixo) = 2.00",
-        "x código morto (0.35) = 0.70",
-        "- esforço 3.0 SP (2.40) = -1.70"
-      ],
-      "nome": "Função com complexidade ciclomática alta",
-      "perguntas_questionario": [],
-      "pontuacao": -1.7,
-      "prioridade": "Baixa",
-      "prioridade_tecnica": "baixo",
-      "risco": "Baixo",
-      "valor": "Manutenibilidade — reduz o risco da saída do dev em 6 semanas"
-    },
-    {
-      "alcancavel": false,
-      "arquivo": "app/models/billing_category.py",
-      "categoria": "Manutenibilidade",
-      "conceito": "cyclomatic_complexity",
-      "descricao": "Cyclomatic complexity for get_effective_rate: 7 (rank B)",
-      "esforco_sp": 3.0,
-      "ferramentas": [
-        "radon"
-      ],
-      "id": "DT-80",
-      "impacto": "Função complexa demais para alterar com segurança. O desenvolvedor que escreveu 90% do código sai em 6 semanas, e não há testes nem staging — o conhecimento sai junto com ele.",
-      "linha": 19,
-      "memorial": [
-        "base técnica (baixo) = 2.00",
-        "x código morto (0.35) = 0.70",
-        "- esforço 3.0 SP (2.40) = -1.70"
-      ],
-      "nome": "Função com complexidade ciclomática alta",
-      "perguntas_questionario": [],
-      "pontuacao": -1.7,
-      "prioridade": "Baixa",
-      "prioridade_tecnica": "baixo",
-      "risco": "Baixo",
-      "valor": "Manutenibilidade — reduz o risco da saída do dev em 6 semanas"
-    },
-    {
-      "alcancavel": false,
-      "arquivo": "app/models/billing_category.py",
-      "categoria": "Manutenibilidade",
-      "conceito": "cyclomatic_complexity",
-      "descricao": "Cyclomatic complexity for get_most_used: 2 (rank A)",
-      "esforco_sp": 3.0,
-      "ferramentas": [
-        "radon"
-      ],
-      "id": "DT-81",
-      "impacto": "Função complexa demais para alterar com segurança. O desenvolvedor que escreveu 90% do código sai em 6 semanas, e não há testes nem staging — o conhecimento sai junto com ele.",
-      "linha": 39,
-      "memorial": [
-        "base técnica (baixo) = 2.00",
-        "x código morto (0.35) = 0.70",
-        "- esforço 3.0 SP (2.40) = -1.70"
-      ],
-      "nome": "Função com complexidade ciclomática alta",
-      "perguntas_questionario": [],
-      "pontuacao": -1.7,
-      "prioridade": "Baixa",
-      "prioridade_tecnica": "baixo",
-      "risco": "Baixo",
-      "valor": "Manutenibilidade — reduz o risco da saída do dev em 6 semanas"
-    },
-    {
-      "alcancavel": false,
-      "arquivo": "app/models/customer.py",
-      "categoria": "Manutenibilidade",
-      "conceito": "cyclomatic_complexity",
-      "descricao": "Cyclomatic complexity for Customer: 3 (rank A)",
-      "esforco_sp": 3.0,
-      "ferramentas": [
-        "radon"
-      ],
-      "id": "DT-82",
-      "impacto": "Função complexa demais para alterar com segurança. O desenvolvedor que escreveu 90% do código sai em 6 semanas, e não há testes nem staging — o conhecimento sai junto com ele.",
-      "linha": 5,
-      "memorial": [
-        "base técnica (baixo) = 2.00",
-        "x código morto (0.35) = 0.70",
-        "- esforço 3.0 SP (2.40) = -1.70"
-      ],
-      "nome": "Função com complexidade ciclomática alta",
-      "perguntas_questionario": [],
-      "pontuacao": -1.7,
-      "prioridade": "Baixa",
-      "prioridade_tecnica": "baixo",
-      "risco": "Baixo",
-      "valor": "Manutenibilidade — reduz o risco da saída do dev em 6 semanas"
-    },
-    {
-      "alcancavel": false,
-      "arquivo": "app/models/customer.py",
-      "categoria": "Manutenibilidade",
-      "conceito": "cyclomatic_complexity",
-      "descricao": "Cyclomatic complexity for __init__: 1 (rank A)",
-      "esforco_sp": 3.0,
-      "ferramentas": [
-        "radon"
-      ],
-      "id": "DT-83",
-      "impacto": "Função complexa demais para alterar com segurança. O desenvolvedor que escreveu 90% do código sai em 6 semanas, e não há testes nem staging — o conhecimento sai junto com ele.",
-      "linha": 6,
-      "memorial": [
-        "base técnica (baixo) = 2.00",
-        "x código morto (0.35) = 0.70",
-        "- esforço 3.0 SP (2.40) = -1.70"
-      ],
-      "nome": "Função com complexidade ciclomática alta",
-      "perguntas_questionario": [],
-      "pontuacao": -1.7,
-      "prioridade": "Baixa",
-      "prioridade_tecnica": "baixo",
-      "risco": "Baixo",
-      "valor": "Manutenibilidade — reduz o risco da saída do dev em 6 semanas"
-    },
-    {
-      "alcancavel": false,
-      "arquivo": "app/models/customer.py",
-      "categoria": "Manutenibilidade",
-      "conceito": "cyclomatic_complexity",
-      "descricao": "Cyclomatic complexity for get_display_name: 1 (rank A)",
-      "esforco_sp": 3.0,
-      "ferramentas": [
-        "radon"
-      ],
-      "id": "DT-84",
-      "impacto": "Função complexa demais para alterar com segurança. O desenvolvedor que escreveu 90% do código sai em 6 semanas, e não há testes nem staging — o conhecimento sai junto com ele.",
-      "linha": 12,
-      "memorial": [
-        "base técnica (baixo) = 2.00",
-        "x código morto (0.35) = 0.70",
-        "- esforço 3.0 SP (2.40) = -1.70"
-      ],
-      "nome": "Função com complexidade ciclomática alta",
-      "perguntas_questionario": [],
-      "pontuacao": -1.7,
-      "prioridade": "Baixa",
-      "prioridade_tecnica": "baixo",
-      "risco": "Baixo",
-      "valor": "Manutenibilidade — reduz o risco da saída do dev em 6 semanas"
-    },
-    {
-      "alcancavel": false,
-      "arquivo": "app/models/customer.py",
-      "categoria": "Manutenibilidade",
-      "conceito": "cyclomatic_complexity",
-      "descricao": "Cyclomatic complexity for is_high_value: 3 (rank A)",
-      "esforco_sp": 3.0,
-      "ferramentas": [
-        "radon"
-      ],
-      "id": "DT-85",
-      "impacto": "Função complexa demais para alterar com segurança. O desenvolvedor que escreveu 90% do código sai em 6 semanas, e não há testes nem staging — o conhecimento sai junto com ele.",
-      "linha": 18,
-      "memorial": [
-        "base técnica (baixo) = 2.00",
-        "x código morto (0.35) = 0.70",
-        "- esforço 3.0 SP (2.40) = -1.70"
-      ],
-      "nome": "Função com complexidade ciclomática alta",
-      "perguntas_questionario": [],
-      "pontuacao": -1.7,
-      "prioridade": "Baixa",
-      "prioridade_tecnica": "baixo",
-      "risco": "Baixo",
-      "valor": "Manutenibilidade — reduz o risco da saída do dev em 6 semanas"
-    },
-    {
-      "alcancavel": false,
-      "arquivo": "app/models/customer.py",
-      "categoria": "Manutenibilidade",
-      "conceito": "cyclomatic_complexity",
-      "descricao": "Cyclomatic complexity for get_month_total: 3 (rank A)",
-      "esforco_sp": 3.0,
-      "ferramentas": [
-        "radon"
-      ],
-      "id": "DT-86",
-      "impacto": "Função complexa demais para alterar com segurança. O desenvolvedor que escreveu 90% do código sai em 6 semanas, e não há testes nem staging — o conhecimento sai junto com ele.",
-      "linha": 35,
-      "memorial": [
-        "base técnica (baixo) = 2.00",
-        "x código morto (0.35) = 0.70",
-        "- esforço 3.0 SP (2.40) = -1.70"
-      ],
-      "nome": "Função com complexidade ciclomática alta",
-      "perguntas_questionario": [],
-      "pontuacao": -1.7,
-      "prioridade": "Baixa",
-      "prioridade_tecnica": "baixo",
-      "risco": "Baixo",
-      "valor": "Manutenibilidade — reduz o risco da saída do dev em 6 semanas"
-    },
-    {
-      "alcancavel": false,
-      "arquivo": "app/services/notification_service.py",
-      "categoria": "Manutenibilidade",
-      "conceito": "cyclomatic_complexity",
-      "descricao": "Cyclomatic complexity for NotificationService: 6 (rank B)",
-      "esforco_sp": 3.0,
-      "ferramentas": [
-        "radon"
-      ],
-      "id": "DT-87",
-      "impacto": "Função complexa demais para alterar com segurança. O desenvolvedor que escreveu 90% do código sai em 6 semanas, e não há testes nem staging — o conhecimento sai junto com ele.",
-      "linha": 8,
-      "memorial": [
-        "base técnica (baixo) = 2.00",
-        "x código morto (0.35) = 0.70",
-        "- esforço 3.0 SP (2.40) = -1.70"
-      ],
-      "nome": "Função com complexidade ciclomática alta",
-      "perguntas_questionario": [],
-      "pontuacao": -1.7,
-      "prioridade": "Baixa",
-      "prioridade_tecnica": "baixo",
-      "risco": "Baixo",
-      "valor": "Manutenibilidade — reduz o risco da saída do dev em 6 semanas"
-    },
-    {
-      "alcancavel": false,
-      "arquivo": "app/services/notification_service.py",
-      "categoria": "Manutenibilidade",
-      "conceito": "cyclomatic_complexity",
-      "descricao": "Cyclomatic complexity for __init__: 1 (rank A)",
-      "esforco_sp": 3.0,
-      "ferramentas": [
-        "radon"
-      ],
-      "id": "DT-88",
-      "impacto": "Função complexa demais para alterar com segurança. O desenvolvedor que escreveu 90% do código sai em 6 semanas, e não há testes nem staging — o conhecimento sai junto com ele.",
-      "linha": 17,
-      "memorial": [
-        "base técnica (baixo) = 2.00",
-        "x código morto (0.35) = 0.70",
-        "- esforço 3.0 SP (2.40) = -1.70"
-      ],
-      "nome": "Função com complexidade ciclomática alta",
-      "perguntas_questionario": [],
-      "pontuacao": -1.7,
-      "prioridade": "Baixa",
-      "prioridade_tecnica": "baixo",
-      "risco": "Baixo",
-      "valor": "Manutenibilidade — reduz o risco da saída do dev em 6 semanas"
-    },
-    {
-      "alcancavel": false,
       "arquivo": "app/services/notification_service.py",
       "categoria": "Manutenibilidade",
       "conceito": "cyclomatic_complexity",
@@ -2433,61 +1560,9 @@
       "ferramentas": [
         "radon"
       ],
-      "id": "DT-89",
+      "id": "DT-56",
       "impacto": "Função complexa demais para alterar com segurança. O desenvolvedor que escreveu 90% do código sai em 6 semanas, e não há testes nem staging — o conhecimento sai junto com ele.",
       "linha": 20,
-      "memorial": [
-        "base técnica (baixo) = 2.00",
-        "x código morto (0.35) = 0.70",
-        "- esforço 3.0 SP (2.40) = -1.70"
-      ],
-      "nome": "Função com complexidade ciclomática alta",
-      "perguntas_questionario": [],
-      "pontuacao": -1.7,
-      "prioridade": "Baixa",
-      "prioridade_tecnica": "baixo",
-      "risco": "Baixo",
-      "valor": "Manutenibilidade — reduz o risco da saída do dev em 6 semanas"
-    },
-    {
-      "alcancavel": false,
-      "arquivo": "app/services/notification_service.py",
-      "categoria": "Manutenibilidade",
-      "conceito": "cyclomatic_complexity",
-      "descricao": "Cyclomatic complexity for format_message: 5 (rank A)",
-      "esforco_sp": 3.0,
-      "ferramentas": [
-        "radon"
-      ],
-      "id": "DT-90",
-      "impacto": "Função complexa demais para alterar com segurança. O desenvolvedor que escreveu 90% do código sai em 6 semanas, e não há testes nem staging — o conhecimento sai junto com ele.",
-      "linha": 86,
-      "memorial": [
-        "base técnica (baixo) = 2.00",
-        "x código morto (0.35) = 0.70",
-        "- esforço 3.0 SP (2.40) = -1.70"
-      ],
-      "nome": "Função com complexidade ciclomática alta",
-      "perguntas_questionario": [],
-      "pontuacao": -1.7,
-      "prioridade": "Baixa",
-      "prioridade_tecnica": "baixo",
-      "risco": "Baixo",
-      "valor": "Manutenibilidade — reduz o risco da saída do dev em 6 semanas"
-    },
-    {
-      "alcancavel": false,
-      "arquivo": "app/services/notification_service.py",
-      "categoria": "Manutenibilidade",
-      "conceito": "cyclomatic_complexity",
-      "descricao": "Cyclomatic complexity for build_message: 3 (rank A)",
-      "esforco_sp": 3.0,
-      "ferramentas": [
-        "radon"
-      ],
-      "id": "DT-91",
-      "impacto": "Função complexa demais para alterar com segurança. O desenvolvedor que escreveu 90% do código sai em 6 semanas, e não há testes nem staging — o conhecimento sai junto com ele.",
-      "linha": 98,
       "memorial": [
         "base técnica (baixo) = 2.00",
         "x código morto (0.35) = 0.70",
@@ -2511,7 +1586,7 @@
       "ferramentas": [
         "radon"
       ],
-      "id": "DT-92",
+      "id": "DT-57",
       "impacto": "Função complexa demais para alterar com segurança. O desenvolvedor que escreveu 90% do código sai em 6 semanas, e não há testes nem staging — o conhecimento sai junto com ele.",
       "linha": 8,
       "memorial": [
@@ -2537,6 +1612,288 @@
     }
   ],
   "linguagem": "python",
+  "observado_nao_classificado": {
+    "ambiente_de_analise": [
+      {
+        "conceito": "import_error",
+        "descricao": "Unable to import 'flask'",
+        "local": "app/everything.py:2",
+        "motivo": "Mapped concept 'import_error' to the V1 category 'environmental'."
+      },
+      {
+        "conceito": "import_error",
+        "descricao": "Unable to import 'flask'",
+        "local": "app/routes/report_routes.py:5",
+        "motivo": "Mapped concept 'import_error' to the V1 category 'environmental'."
+      }
+    ],
+    "metricas_rank_a_b": [
+      {
+        "conceito": "cyclomatic_complexity",
+        "descricao": "Cyclomatic complexity for save: 6 (rank B)",
+        "local": "app/everything.py:153",
+        "motivo": "Metric retained for analysis; Radon rank A-B is not classified as a debt candidate in V1.",
+        "rank": "B",
+        "valor": "6"
+      },
+      {
+        "conceito": "cyclomatic_complexity",
+        "descricao": "Cyclomatic complexity for delete: 1 (rank A)",
+        "local": "app/everything.py:196",
+        "motivo": "Metric retained for analysis; Radon rank A-B is not classified as a debt candidate in V1.",
+        "rank": "A",
+        "valor": "1"
+      },
+      {
+        "conceito": "cyclomatic_complexity",
+        "descricao": "Cyclomatic complexity for report: 3 (rank A)",
+        "local": "app/everything.py:211",
+        "motivo": "Metric retained for analysis; Radon rank A-B is not classified as a debt candidate in V1.",
+        "rank": "A",
+        "valor": "3"
+      },
+      {
+        "conceito": "cyclomatic_complexity",
+        "descricao": "Cyclomatic complexity for get_db: 1 (rank A)",
+        "local": "app/everything.py:31",
+        "motivo": "Metric retained for analysis; Radon rank A-B is not classified as a debt candidate in V1.",
+        "rank": "A",
+        "valor": "1"
+      },
+      {
+        "conceito": "cyclomatic_complexity",
+        "descricao": "Cyclomatic complexity for format_for_display: 1 (rank A)",
+        "local": "app/helpers/date_helper.py:87",
+        "motivo": "Metric retained for analysis; Radon rank A-B is not classified as a debt candidate in V1.",
+        "rank": "A",
+        "valor": "1"
+      },
+      {
+        "conceito": "cyclomatic_complexity",
+        "descricao": "Cyclomatic complexity for is_valid: 2 (rank A)",
+        "local": "app/helpers/date_helper.py:91",
+        "motivo": "Metric retained for analysis; Radon rank A-B is not classified as a debt candidate in V1.",
+        "rank": "A",
+        "valor": "2"
+      },
+      {
+        "conceito": "cyclomatic_complexity",
+        "descricao": "Cyclomatic complexity for get_display_name: 1 (rank A)",
+        "local": "app/models/billing_category.py:12",
+        "motivo": "Metric retained for analysis; Radon rank A-B is not classified as a debt candidate in V1.",
+        "rank": "A",
+        "valor": "1"
+      },
+      {
+        "conceito": "cyclomatic_complexity",
+        "descricao": "Cyclomatic complexity for get_effective_rate: 7 (rank B)",
+        "local": "app/models/billing_category.py:19",
+        "motivo": "Metric retained for analysis; Radon rank A-B is not classified as a debt candidate in V1.",
+        "rank": "B",
+        "valor": "7"
+      },
+      {
+        "conceito": "cyclomatic_complexity",
+        "descricao": "Cyclomatic complexity for get_most_used: 2 (rank A)",
+        "local": "app/models/billing_category.py:39",
+        "motivo": "Metric retained for analysis; Radon rank A-B is not classified as a debt candidate in V1.",
+        "rank": "A",
+        "valor": "2"
+      },
+      {
+        "conceito": "cyclomatic_complexity",
+        "descricao": "Cyclomatic complexity for BillingCategory: 4 (rank A)",
+        "local": "app/models/billing_category.py:5",
+        "motivo": "Metric retained for analysis; Radon rank A-B is not classified as a debt candidate in V1.",
+        "rank": "A",
+        "valor": "4"
+      },
+      {
+        "conceito": "cyclomatic_complexity",
+        "descricao": "Cyclomatic complexity for __init__: 1 (rank A)",
+        "local": "app/models/billing_category.py:6",
+        "motivo": "Metric retained for analysis; Radon rank A-B is not classified as a debt candidate in V1.",
+        "rank": "A",
+        "valor": "1"
+      },
+      {
+        "conceito": "cyclomatic_complexity",
+        "descricao": "Cyclomatic complexity for get_display_name: 1 (rank A)",
+        "local": "app/models/customer.py:12",
+        "motivo": "Metric retained for analysis; Radon rank A-B is not classified as a debt candidate in V1.",
+        "rank": "A",
+        "valor": "1"
+      },
+      {
+        "conceito": "cyclomatic_complexity",
+        "descricao": "Cyclomatic complexity for is_high_value: 3 (rank A)",
+        "local": "app/models/customer.py:18",
+        "motivo": "Metric retained for analysis; Radon rank A-B is not classified as a debt candidate in V1.",
+        "rank": "A",
+        "valor": "3"
+      },
+      {
+        "conceito": "cyclomatic_complexity",
+        "descricao": "Cyclomatic complexity for get_month_total: 3 (rank A)",
+        "local": "app/models/customer.py:35",
+        "motivo": "Metric retained for analysis; Radon rank A-B is not classified as a debt candidate in V1.",
+        "rank": "A",
+        "valor": "3"
+      },
+      {
+        "conceito": "cyclomatic_complexity",
+        "descricao": "Cyclomatic complexity for Customer: 3 (rank A)",
+        "local": "app/models/customer.py:5",
+        "motivo": "Metric retained for analysis; Radon rank A-B is not classified as a debt candidate in V1.",
+        "rank": "A",
+        "valor": "3"
+      },
+      {
+        "conceito": "cyclomatic_complexity",
+        "descricao": "Cyclomatic complexity for __init__: 1 (rank A)",
+        "local": "app/models/customer.py:6",
+        "motivo": "Metric retained for analysis; Radon rank A-B is not classified as a debt candidate in V1.",
+        "rank": "A",
+        "valor": "1"
+      },
+      {
+        "conceito": "cyclomatic_complexity",
+        "descricao": "Cyclomatic complexity for ReportController: 6 (rank B)",
+        "local": "app/routes/report_routes.py:13",
+        "motivo": "Metric retained for analysis; Radon rank A-B is not classified as a debt candidate in V1.",
+        "rank": "B",
+        "valor": "6"
+      },
+      {
+        "conceito": "cyclomatic_complexity",
+        "descricao": "Cyclomatic complexity for monthly: 1 (rank A)",
+        "local": "app/routes/report_routes.py:137",
+        "motivo": "Metric retained for analysis; Radon rank A-B is not classified as a debt candidate in V1.",
+        "rank": "A",
+        "valor": "1"
+      },
+      {
+        "conceito": "cyclomatic_complexity",
+        "descricao": "Cyclomatic complexity for __init__: 1 (rank A)",
+        "local": "app/routes/report_routes.py:14",
+        "motivo": "Metric retained for analysis; Radon rank A-B is not classified as a debt candidate in V1.",
+        "rank": "A",
+        "valor": "1"
+      },
+      {
+        "conceito": "cyclomatic_complexity",
+        "descricao": "Cyclomatic complexity for annual: 1 (rank A)",
+        "local": "app/routes/report_routes.py:142",
+        "motivo": "Metric retained for analysis; Radon rank A-B is not classified as a debt candidate in V1.",
+        "rank": "A",
+        "valor": "1"
+      },
+      {
+        "conceito": "cyclomatic_complexity",
+        "descricao": "Cyclomatic complexity for export_for_accounting: 1 (rank A)",
+        "local": "app/routes/report_routes.py:147",
+        "motivo": "Metric retained for analysis; Radon rank A-B is not classified as a debt candidate in V1.",
+        "rank": "A",
+        "valor": "1"
+      },
+      {
+        "conceito": "cyclomatic_complexity",
+        "descricao": "Cyclomatic complexity for annual: 3 (rank A)",
+        "local": "app/routes/report_routes.py:82",
+        "motivo": "Metric retained for analysis; Radon rank A-B is not classified as a debt candidate in V1.",
+        "rank": "A",
+        "valor": "3"
+      },
+      {
+        "conceito": "cyclomatic_complexity",
+        "descricao": "Cyclomatic complexity for export_for_accounting: 3 (rank A)",
+        "local": "app/routes/report_routes.py:97",
+        "motivo": "Metric retained for analysis; Radon rank A-B is not classified as a debt candidate in V1.",
+        "rank": "A",
+        "valor": "3"
+      },
+      {
+        "conceito": "cyclomatic_complexity",
+        "descricao": "Cyclomatic complexity for generate_monthly_report: 4 (rank A)",
+        "local": "app/services/billing_service.py:102",
+        "motivo": "Metric retained for analysis; Radon rank A-B is not classified as a debt candidate in V1.",
+        "rank": "A",
+        "valor": "4"
+      },
+      {
+        "conceito": "cyclomatic_complexity",
+        "descricao": "Cyclomatic complexity for calculate_invoice: 10 (rank B)",
+        "local": "app/services/billing_service.py:12",
+        "motivo": "Metric retained for analysis; Radon rank A-B is not classified as a debt candidate in V1.",
+        "rank": "B",
+        "valor": "10"
+      },
+      {
+        "conceito": "cyclomatic_complexity",
+        "descricao": "Cyclomatic complexity for BillingService: 6 (rank B)",
+        "local": "app/services/billing_service.py:8",
+        "motivo": "Metric retained for analysis; Radon rank A-B is not classified as a debt candidate in V1.",
+        "rank": "B",
+        "valor": "6"
+      },
+      {
+        "conceito": "cyclomatic_complexity",
+        "descricao": "Cyclomatic complexity for __init__: 1 (rank A)",
+        "local": "app/services/billing_service.py:9",
+        "motivo": "Metric retained for analysis; Radon rank A-B is not classified as a debt candidate in V1.",
+        "rank": "A",
+        "valor": "1"
+      },
+      {
+        "conceito": "cyclomatic_complexity",
+        "descricao": "Cyclomatic complexity for __init__: 1 (rank A)",
+        "local": "app/services/notification_service.py:17",
+        "motivo": "Metric retained for analysis; Radon rank A-B is not classified as a debt candidate in V1.",
+        "rank": "A",
+        "valor": "1"
+      },
+      {
+        "conceito": "cyclomatic_complexity",
+        "descricao": "Cyclomatic complexity for NotificationService: 6 (rank B)",
+        "local": "app/services/notification_service.py:8",
+        "motivo": "Metric retained for analysis; Radon rank A-B is not classified as a debt candidate in V1.",
+        "rank": "B",
+        "valor": "6"
+      },
+      {
+        "conceito": "cyclomatic_complexity",
+        "descricao": "Cyclomatic complexity for format_message: 5 (rank A)",
+        "local": "app/services/notification_service.py:86",
+        "motivo": "Metric retained for analysis; Radon rank A-B is not classified as a debt candidate in V1.",
+        "rank": "A",
+        "valor": "5"
+      },
+      {
+        "conceito": "cyclomatic_complexity",
+        "descricao": "Cyclomatic complexity for build_message: 3 (rank A)",
+        "local": "app/services/notification_service.py:98",
+        "motivo": "Metric retained for analysis; Radon rank A-B is not classified as a debt candidate in V1.",
+        "rank": "A",
+        "valor": "3"
+      },
+      {
+        "conceito": "cyclomatic_complexity",
+        "descricao": "Cyclomatic complexity for sync_from_erp: 10 (rank B)",
+        "local": "sync_data.py:18",
+        "motivo": "Metric retained for analysis; Radon rank A-B is not classified as a debt candidate in V1.",
+        "rank": "B",
+        "valor": "10"
+      },
+      {
+        "conceito": "cyclomatic_complexity",
+        "descricao": "Cyclomatic complexity for sync_from_crm: 8 (rank B)",
+        "local": "sync_data.py:77",
+        "motivo": "Metric retained for analysis; Radon rank A-B is not classified as a debt candidate in V1.",
+        "rank": "B",
+        "valor": "8"
+      }
+    ]
+  },
   "questionario": [
     {
       "evidencia": "`app/everything.py:219`; `app/routes/report_routes.py:29`; `app/routes/report_routes.py:44` (+3 ocorrências)",
@@ -2599,15 +1956,15 @@
   "resumo": {
     "achados_brutos": 97,
     "capacidade_sp_semana": 6,
-    "debitos": 92,
-    "esforco_total_sp": 170.0,
+    "debitos": 57,
+    "esforco_total_sp": 70.0,
     "falsos_positivos_descartados": 1,
     "grupos_apos_deduplicacao": 93,
     "por_prioridade": {
       "Alta": 2,
-      "Baixa": 80,
+      "Baixa": 46,
       "Crítica": 2,
-      "Média": 8
+      "Média": 7
     }
   }
 }
