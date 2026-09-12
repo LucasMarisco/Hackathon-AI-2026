@@ -5,6 +5,7 @@ from classification import classify_group
 from deduplication import FindingGroup
 from models import Finding, FindingKind
 from scoring import (
+    EXPOENTE_ESFORCO_POR_TIER,
     LIMIAR_ALTO,
     LIMIAR_MEDIO,
     _priority_for_score,
@@ -23,7 +24,7 @@ class ScoringTests(unittest.TestCase):
         category="security",
         kind=FindingKind.FINDING,
         metric_value=None,
-        severity=None,
+        severity="HIGH",
         file_path="file.py",
     ):
         finding = Finding(
@@ -48,19 +49,29 @@ class ScoringTests(unittest.TestCase):
     def test_security_concepts_receive_explicit_high_risk_score(self):
         result = calculate_score(self.make_group("dynamic_sql"))
         self.assertEqual(score_priority_label(result.score_priority), "high")
+        # nota bruta 5.0 * peso_sev 1.0 (severidade HIGH)
         self.assertEqual(result.notes["seguranca"], 5.0)
         self.assertIn("aggravating_weights", result.factors)
 
-    def test_hardcoded_secret_is_scored_separately_from_tool_severity(self):
-        result = calculate_score(self.make_group("hardcoded_secret"))
-        self.assertGreater(result.score, 300)
-        self.assertEqual(result.factors["native_severity"], None)
+    def test_tool_severity_scales_the_notes(self):
+        # bandit reporta B105 (senha hardcoded) como LOW, apesar de ser credencial
+        # real em producao. peso_sev corta a nota; o tier de prazo e quem garante
+        # que o item nao desapareca da frente da fila.
+        alto = calculate_score(self.make_group("hardcoded_secret", severity="HIGH"))
+        baixo = calculate_score(self.make_group("hardcoded_secret", severity="LOW"))
+        self.assertGreater(alto.score, 300)
+        self.assertLess(baixo.score, alto.score)
+        self.assertEqual(alto.factors["native_severity"], "HIGH")
+        # a severidade muda o score, mas nao o prazo
+        self.assertEqual(alto.deadline_tier, baixo.deadline_tier)
 
     def test_missing_timeout_and_swallowed_exception_have_policy_notes(self):
         timeout = calculate_score(self.make_group("missing_timeout", category="availability"))
         swallowed = calculate_score(self.make_group("swallowed_exception", category="reliability"))
         self.assertEqual(timeout.notes["aumento_problema"], 3.0)
         self.assertEqual(swallowed.notes["aumento_problema"], 3.0)
+        # timeout pontua mais: mesmo produto de notas, mas custa 0.5 ponto
+        # contra 1.0 do swallowed_exception
         self.assertGreater(timeout.score, swallowed.score)
 
     def test_complexity_29_uses_metric_value(self):
@@ -73,10 +84,12 @@ class ScoringTests(unittest.TestCase):
                 severity="F",
             )
         )
-        # metric_value=29 (>= 20) aciona o bucket severo do radon
+        # as notas sao cruas; a severidade entra uma vez sobre o produto
         self.assertEqual(result.notes["aumento_problema"], 4.0)
-        # refatorar função de CC=29 sem rede de testes custa 5 story points, então
-        # o esforço derruba o score bruto: caro e sem prazo associado
+        # CC=29 usa metric_value, nao a letra do rank
+        self.assertEqual(result.factors["peso_severidade"], 1.0)
+        # refatorar funcao de CC=29 sem rede de testes custa 5 story points, e o
+        # esforco derruba o score bruto: caro e sem prazo associado
         self.assertEqual(result.esforco_pontos, 5.0)
         self.assertEqual(result.score_priority, "baixo")
 
@@ -87,8 +100,14 @@ class ScoringTests(unittest.TestCase):
         blocker = calculate_score(self.make_group("import_error", category="environmental"))
         self.assertEqual(unused.deadline_tier, 3)
         self.assertEqual(blocker.deadline_tier, 1)
-        self.assertEqual(unused.score_priority, "baixo")
-        self.assertEqual(blocker.score_priority, "alto")
+        # o que importa e a posicao na fila, nao a faixa bruta de score: o
+        # bloqueador vem antes mesmo quando o score bruto nao o favorece
+        self.assertEqual(
+            [item.concept for item in rank_groups([unused, blocker])],
+            ["import_error", "unused_variable"],
+        )
+        self.assertEqual(blocker.priority, "high")
+        self.assertEqual(unused.priority, "low")
 
     def test_dynamic_sql_scores_above_high_threshold(self):
         result = calculate_score(self.make_group("dynamic_sql"))
@@ -97,7 +116,9 @@ class ScoringTests(unittest.TestCase):
     def test_missing_notes_are_neutral_and_zero_denominator_is_protected(self):
         result = calculate_score(self.make_group("unused_variable", category="code_quality"))
         notes = notes_for_group(self.make_group("unused_variable", category="code_quality"))
-        self.assertEqual(notes["tempo"], 1.0)
+        # o atenuante "tempo" e o esforco do conceito elevado ao expoente do tier
+        self.assertEqual(notes["tempo"], 0.5 ** EXPOENTE_ESFORCO_POR_TIER[3])
+        self.assertEqual(result.esforco_pontos, 0.5)
         self.assertGreater(result.score, 0)
         with patch("scoring.PESOS_ATENUANTES", {"tempo": 0.0}):
             protected = calculate_score(
@@ -158,10 +179,16 @@ class DeadlineDominanceTests(_ScoredBuilder, unittest.TestCase):
     def test_worst_blocker_beats_best_non_blocker(self):
         """O caso adversario: bloqueador com score baixo vs livre com score alto."""
 
+        # severidades escolhidas de proposito para o bloqueador ficar com o
+        # score mais BAIXO -- e o que torna o caso interessante
         blocker = self.scored(
-            "inconsistent_returns", "app/routes/report_routes.py", category="reliability"
+            "inconsistent_returns", "app/routes/report_routes.py",
+            category="reliability", severity="LOW",
         )
-        free = self.scored("missing_timeout", "outro/arquivo.py", category="availability")
+        free = self.scored(
+            "missing_timeout", "outro/arquivo.py",
+            category="availability", severity="HIGH",
+        )
 
         # o bloqueador tem score MENOR -- e o que torna o caso interessante
         self.assertLess(blocker.score, free.score)
@@ -271,6 +298,69 @@ class RankDeterminismTests(_ScoredBuilder, unittest.TestCase):
             [item.group_id for item in ordered],
             sorted(item.group_id for item in items),
         )
+
+
+class SeverityWeightTests(_ScoredBuilder, unittest.TestCase):
+    """O peso de severidade nao pode desmontar a ordem por prazo/esforco."""
+
+    def test_metric_weight_is_monotonic_in_complexity(self):
+        """Mais complexo tem de pontuar mais.
+
+        O rank do radon nao serve como severidade: a escala e invertida
+        (A = simples, F = inalteravel sem reescrita). Usamos metric_value.
+        """
+
+        scores = [
+            self.scored(
+                "cyclomatic_complexity", "outro/arquivo.py",
+                category="maintainability", kind=FindingKind.METRIC,
+                metric_value=cc, severity=rank,
+            ).score
+            for cc, rank in [(3, "A"), (13, "C"), (18, "D"), (29, "F")]
+        ]
+        self.assertEqual(scores, sorted(scores))
+        self.assertLess(scores[0], scores[-1])
+
+    def test_severity_weight_is_applied_once_not_per_note(self):
+        """Aplicado por nota, o peso vira peso**5 e engole o esforco.
+
+        Com 5 notas, um peso de 0.3 por nota daria 0.00243 -- faixa de ~400x
+        contra HIGH, o que passa por cima da faixa de esforco (~8x no tier 2) e
+        destroi a ordenacao "mais barato primeiro".
+        """
+
+        alto = self.scored("hardcoded_secret", "sync_data.py", severity="HIGH")
+        baixo = self.scored("hardcoded_secret", "sync_data.py", severity="LOW")
+        razao = alto.score / baixo.score
+        self.assertAlmostEqual(razao, 1.0 / 0.3, places=6)
+        self.assertLess(razao, 5.0)  # se fosse por nota, seria ~400x
+
+    def test_effort_still_wins_over_severity_inside_tier_2(self):
+        """A regra do time sobrevive as severidades reais das ferramentas.
+
+        bandit reporta B201 (debug) como HIGH, B105 (credencial) como LOW e
+        B608 (SQL) como MEDIUM -- ou seja, a severidade empurra na direcao
+        contraria ao esforco. O esforco tem de ganhar.
+        """
+
+        items = [
+            self.scored("dynamic_sql", "app/models/customer.py", severity="MEDIUM"),
+            self.scored("debug_enabled", "run.py", severity="HIGH"),
+            self.scored("hardcoded_secret", "sync_data.py", severity="LOW"),
+        ]
+        for item in items:
+            self.assertEqual(item.deadline_tier, 2)
+        ordenado = rank_groups(items)
+        self.assertEqual(
+            [item.concept for item in ordenado],
+            ["debug_enabled", "hardcoded_secret", "dynamic_sql"],
+        )
+        esforcos = [item.esforco_pontos for item in ordenado]
+        self.assertEqual(esforcos, sorted(esforcos))
+
+    def test_unknown_severity_is_neutral_not_punished(self):
+        sem_sev = self.scored("hardcoded_secret", "sync_data.py", severity=None)
+        self.assertEqual(sem_sev.factors["peso_severidade"], 0.6)
 
 
 if __name__ == "__main__":
