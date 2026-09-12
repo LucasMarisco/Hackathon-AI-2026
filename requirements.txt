@@ -17,8 +17,9 @@ semgrep==1.93.0
 # --- pipeline ---
 pydantic==2.8.2
 
-# --- enriquecimento de descrições via LLM (opcional, ver docs/ferramentas.md) ---
-google-generativeai==0.8.3
+# --- relatório interpretativo opcional via Gemini ---
+google-genai
+python-dotenv
 
 # --- testes ---
 # Não vem na imagem da organização, mas `tests/test_scoring.py` é entrega

@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from deduplication import FindingGroup
-from models import FindingKind
+from models import FindingKind, ValidationStatus
 
 
 CATEGORIES = {
@@ -79,6 +79,7 @@ class ClassifiedFindingGroup:
     group: FindingGroup
     category: str
     priority: str | None
+    validation_status: ValidationStatus
     is_candidate: bool
     rationale: str
 
@@ -91,6 +92,7 @@ class ClassifiedFindingGroup:
             "concept": self.concept,
             "category": self.category,
             "priority": self.priority,
+            "validation_status": self.validation_status.value,
             "is_candidate": self.is_candidate,
             "rationale": self.rationale,
             "group": self.group.to_dict(),
@@ -117,6 +119,7 @@ def classify_group(group: FindingGroup) -> ClassifiedFindingGroup:
         group=group,
         category=category,
         priority=priority,
+        validation_status=group.validation_status,
         is_candidate=is_candidate,
         rationale=rationale,
     )

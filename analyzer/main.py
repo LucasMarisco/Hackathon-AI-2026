@@ -11,6 +11,7 @@ from deduplication import deduplicate_findings
 from detectors.python import parse_bandit, parse_pylint, parse_radon, parse_semgrep
 from report import render_json, render_markdown
 from scoring import score_groups
+from ai_report import generate_ai_report
 
 
 def load_findings(output_dir: Path):
@@ -43,12 +44,22 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("output_dir", type=Path)
     parser.add_argument("--report-dir", type=Path, default=Path("analyzer/output"))
+    parser.add_argument("--ai-report", action="store_true")
     args = parser.parse_args()
     findings, groups, classified, scored = run(args.output_dir, args.report_dir)
     print(f"Findings: {len(findings)}")
     print(f"Groups: {len(groups)}")
     print(f"Classified: {len(classified)}")
     print(f"Scored: {len(scored)}")
+    if args.ai_report:
+        try:
+            ai_path = generate_ai_report(
+                args.report_dir / "report.json",
+                args.report_dir / "ai_report.md",
+            )
+            print(f"AI report: {ai_path}")
+        except Exception as exc:
+            print(f"AI report unavailable: {exc}")
 
 
 if __name__ == "__main__":
