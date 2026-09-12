@@ -5,6 +5,7 @@ from models import Finding
 
 RULE_CONCEPTS: dict[tuple[str, str], str] = {
     ("bandit", "B105"): "hardcoded_secret",
+    ("bandit", "B201"): "debug_enabled",
     ("bandit", "B110"): "swallowed_exception",
     ("bandit", "B113"): "missing_timeout",
     ("bandit", "B324"): "weak_password_hash",

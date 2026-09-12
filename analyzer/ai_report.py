@@ -84,8 +84,10 @@ Objetivo: apresentar os resultados já produzidos pelo Radar de Débitos Técnic
 
 Regras obrigatórias:
 - O JSON abaixo é a única fonte de verdade. Não crie findings e não invente fatos, arquivos, linhas, causas ou impactos comprovados.
-- Preserve literalmente category, classification_priority, score, score_priority e score_priority_mapped.
-- Não recalcule score nem altere prioridades. score_priority_mapped já é a prioridade final legível: high, medium ou low.
+- Preserve literalmente category, priority, deadline_tier, blocks_release, questionnaire_items, esforco_pontos, classification_priority, score, score_priority e score_priority_mapped.
+- Não recalcule score nem altere prioridades. `priority` é a prioridade final: critical, high, medium ou low.
+- NÃO REORDENE os findings. A ordem do array `results` é a decisão determinística do motor de priorização, não sugestão: tier de prazo primeiro (0 = bloqueia o release de 14 dias e responde o questionário; 1 = bloqueia o release; 2 = questionário; 3 = sem prazo) e, dentro do tier 2, esforço crescente. Apresente na ordem em que vierem.
+- Explique a prioridade de cada item pelo prazo que ele atende, usando o campo deadline_rationale. Não invente outra justificativa.
 - Nenhum finding está confirmado: todos vêm de análise estática, sem execução do sistema. Use linguagem como "pode indicar" e "deve ser validado".
 - Ferramentas estáticas podem gerar falsos positivos. Não execute o sistema e não proponha novas detecções.
 - Recomendações são interpretações dos dados existentes, não decisões do motor determinístico.
