@@ -14,7 +14,7 @@ from classification import ClassifiedFindingGroup
 # ====================================================================
 PESOS_AGRAVANTES: dict[str, float] = {
     "financeiro": 1.0,
-    "seguranca": 2.5,
+    "seguranca": 3.0, #2.5,
     "aumento_problema": 1.2,
     "imagem_empresa": 1.5,
     "emocional": 0.8,
