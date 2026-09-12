@@ -1,7 +1,7 @@
 import unittest
 
 from deduplication import deduplicate_findings
-from models import Finding, FindingKind, ValidationStatus
+from models import Finding, FindingKind
 
 
 class DeduplicationTests(unittest.TestCase):
@@ -115,7 +115,7 @@ class DeduplicationTests(unittest.TestCase):
         group = deduplicate_findings([finding])[0]
         self.assertEqual(group.concept, "bandit:B999")
 
-    def test_evidence_and_status_are_preserved_conservatively(self):
+    def test_evidence_is_preserved_conservatively(self):
         findings = [
             Finding(
                 source_tool="bandit",
@@ -124,7 +124,6 @@ class DeduplicationTests(unittest.TestCase):
                 file_path="file.py",
                 line=10,
                 description="MD5",
-                validation_status=ValidationStatus.CONFIRMED,
                 raw_data={"code": "hashlib.md5(password)"},
             ),
             Finding(
@@ -137,12 +136,10 @@ class DeduplicationTests(unittest.TestCase):
                 file_path="file.py",
                 line=10,
                 description="MD5 password hash",
-                validation_status=ValidationStatus.NEEDS_VALIDATION,
                 raw_data={"extra": {"lines": "hashlib.md5(password)"}},
             ),
         ]
         group = deduplicate_findings(findings)[0]
-        self.assertEqual(group.validation_status, ValidationStatus.NEEDS_VALIDATION)
         self.assertEqual(len(group.evidences), 2)
         self.assertEqual(group.evidences[0].raw_data["code"], "hashlib.md5(password)")
 
@@ -201,7 +198,6 @@ class DeduplicationTests(unittest.TestCase):
                 file_path="file.py",
                 line=8,
                 description="Too many return statements",
-                validation_status=ValidationStatus.ENVIRONMENTAL,
             ),
         ]
 
@@ -211,7 +207,6 @@ class DeduplicationTests(unittest.TestCase):
                     group.concept,
                     sorted(group.source_tools),
                     sorted(group.rule_ids),
-                    group.validation_status.value,
                     sorted(
                         (e.source_tool, e.rule_id, e.description)
                         for e in group.evidences

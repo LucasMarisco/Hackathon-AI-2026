@@ -7,10 +7,7 @@ from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import Any
 
-from models import Finding, FindingKind, ValidationStatus
-
-
-_DEFAULT_VALIDATION = ValidationStatus.NEEDS_VALIDATION
+from models import Finding, FindingKind
 
 
 def load_json(path: str | Path) -> Any:
@@ -41,7 +38,6 @@ def parse_bandit(data: Mapping[str, Any]) -> list[Finding]:
                 description=_required_description(result, "issue_text", "Bandit"),
                 severity=_optional_string(result, "issue_severity"),
                 confidence=_optional_string(result, "issue_confidence"),
-                validation_status=_DEFAULT_VALIDATION,
                 raw_data=dict(result),
             )
         )
@@ -72,7 +68,6 @@ def parse_semgrep(data: Mapping[str, Any]) -> list[Finding]:
                 confidence=_optional_string(
                     _optional_mapping(extra, "metadata"), "confidence"
                 ),
-                validation_status=_DEFAULT_VALIDATION,
                 raw_data=dict(result),
             )
         )
@@ -108,7 +103,6 @@ def parse_pylint(data: Sequence[Mapping[str, Any]]) -> list[Finding]:
                 line=_optional_int(message, "line"),
                 description=message_text,
                 severity=message_type,
-                validation_status=_DEFAULT_VALIDATION,
                 raw_data=dict(message),
             )
         )
@@ -159,7 +153,6 @@ def parse_radon(data: Mapping[str, Any]) -> list[Finding]:
                     kind=FindingKind.METRIC,
                     metric_value=complexity,
                     threshold=None,
-                    validation_status=_DEFAULT_VALIDATION,
                     raw_data=dict(entry),
                 )
             )

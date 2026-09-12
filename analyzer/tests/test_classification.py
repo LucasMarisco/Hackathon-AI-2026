@@ -2,7 +2,7 @@ import unittest
 
 from classification import classify_group, classify_groups
 from deduplication import FindingGroup
-from models import Finding, FindingKind, ValidationStatus
+from models import Finding, FindingKind
 
 
 class ClassificationTests(unittest.TestCase):
@@ -15,7 +15,6 @@ class ClassificationTests(unittest.TestCase):
         category="security",
         kind=FindingKind.FINDING,
         severity=None,
-        status=ValidationStatus.NEEDS_VALIDATION,
         line=10,
     ):
         finding = Finding(
@@ -27,13 +26,11 @@ class ClassificationTests(unittest.TestCase):
             description=concept,
             severity=severity,
             kind=kind,
-            validation_status=status,
         )
         return FindingGroup(
             concept=concept,
             representative_finding=finding,
             evidences=[finding],
-            validation_status=status,
         )
 
     def test_security_rules(self):
@@ -62,20 +59,7 @@ class ClassificationTests(unittest.TestCase):
             result = classify_group(self.make_group(concept))
             self.assertEqual(result.category, "code_quality")
 
-    def test_environmental_status_controls_environmental_category(self):
-        group = self.make_group(
-            "import_error",
-            source_tool="pylint",
-            rule_id="E0401",
-            category="correctness",
-            status=ValidationStatus.ENVIRONMENTAL,
-        )
-        result = classify_group(group)
-        self.assertEqual(result.category, "environmental")
-        self.assertIsNone(result.priority)
-        self.assertEqual(result.validation_status, ValidationStatus.ENVIRONMENTAL)
-
-    def test_unconfirmed_import_error_is_not_promoted(self):
+    def test_import_error_is_environmental(self):
         group = self.make_group(
             "import_error",
             source_tool="pylint",
@@ -84,7 +68,6 @@ class ClassificationTests(unittest.TestCase):
         )
         result = classify_group(group)
         self.assertEqual(result.category, "environmental")
-        self.assertEqual(result.validation_status, ValidationStatus.NEEDS_VALIDATION)
 
     def test_phpstan_dependency_result_can_be_environmental(self):
         group = self.make_group(
@@ -92,11 +75,9 @@ class ClassificationTests(unittest.TestCase):
             source_tool="phpstan",
             rule_id="class.notFound",
             category="static_analysis",
-            status=ValidationStatus.ENVIRONMENTAL,
         )
         result = classify_group(group)
         self.assertEqual(result.category, "environmental")
-        self.assertEqual(result.validation_status, ValidationStatus.ENVIRONMENTAL)
         self.assertIsNone(result.priority)
 
     def test_radon_below_threshold_remains_metric_only(self):
@@ -141,14 +122,6 @@ class ClassificationTests(unittest.TestCase):
         self.assertIsNone(result.priority)
         self.assertNotEqual(result.priority, "critical")
 
-    def test_validation_status_is_preserved(self):
-        group = self.make_group(
-            "dynamic_sql",
-            status=ValidationStatus.NEEDS_VALIDATION,
-        )
-        result = classify_group(group)
-        self.assertEqual(result.validation_status, ValidationStatus.NEEDS_VALIDATION)
-
     def test_classification_is_independent_of_group_order(self):
         groups = [
             self.make_group("dynamic_sql"),
@@ -156,11 +129,11 @@ class ClassificationTests(unittest.TestCase):
             self.make_group("excessive_branches", rule_id="R0912", category="maintainability"),
         ]
         first = [
-            (item.concept, item.category, item.priority, item.validation_status.value)
+            (item.concept, item.category, item.priority)
             for item in classify_groups(groups)
         ]
         second = [
-            (item.concept, item.category, item.priority, item.validation_status.value)
+            (item.concept, item.category, item.priority)
             for item in classify_groups(list(reversed(groups)))
         ]
         self.assertEqual(sorted(first), sorted(second))

@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from deduplication import FindingGroup
-from models import FindingKind, ValidationStatus
+from models import FindingKind
 
 
 CATEGORIES = {
@@ -79,7 +79,6 @@ class ClassifiedFindingGroup:
     group: FindingGroup
     category: str
     priority: str | None
-    validation_status: ValidationStatus
     is_candidate: bool
     rationale: str
 
@@ -92,7 +91,6 @@ class ClassifiedFindingGroup:
             "concept": self.concept,
             "category": self.category,
             "priority": self.priority,
-            "validation_status": self.validation_status.value,
             "is_candidate": self.is_candidate,
             "rationale": self.rationale,
             "group": self.group.to_dict(),
@@ -111,24 +109,20 @@ def classify_group(group: FindingGroup) -> ClassifiedFindingGroup:
     """Classify one group without changing its findings or evidence."""
 
     category = _category_for(group)
-    status = _classification_status(group, category)
     is_candidate = _is_candidate(group, category)
     priority = _priority_for(group, category, is_candidate)
-    rationale = _rationale_for(group, category, is_candidate, status)
+    rationale = _rationale_for(group, category, is_candidate)
 
     return ClassifiedFindingGroup(
         group=group,
         category=category,
         priority=priority,
-        validation_status=status,
         is_candidate=is_candidate,
         rationale=rationale,
     )
 
 
 def _category_for(group: FindingGroup) -> str:
-    if group.validation_status == ValidationStatus.ENVIRONMENTAL:
-        return "environmental"
     if group.concept in PHPSTAN_ENVIRONMENTAL_CONCEPTS:
         return "environmental"
     if group.concept in CONCEPT_CATEGORIES:
@@ -136,12 +130,6 @@ def _category_for(group: FindingGroup) -> str:
     if group.representative_finding.kind == FindingKind.METRIC:
         return "maintainability"
     return group.representative_finding.category or "code_quality"
-
-
-def _classification_status(
-    group: FindingGroup, category: str
-) -> ValidationStatus:
-    return group.validation_status
 
 
 def _is_candidate(group: FindingGroup, category: str) -> bool:
@@ -169,10 +157,7 @@ def _rationale_for(
     group: FindingGroup,
     category: str,
     is_candidate: bool,
-    status: ValidationStatus,
 ) -> str:
-    if status == ValidationStatus.ENVIRONMENTAL:
-        return "Classified as environmental because the evidence status is environmental."
     if group.representative_finding.kind == FindingKind.METRIC:
         if is_candidate:
             return "Radon rank C-F is a V1 maintainability candidate; threshold is a project placeholder."
