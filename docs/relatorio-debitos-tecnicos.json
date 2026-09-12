@@ -1,0 +1,2613 @@
+{
+  "alcancabilidade": {
+    "app/__init__.py": true,
+    "app/everything.py": true,
+    "app/helpers/__init__.py": false,
+    "app/helpers/date_helper.py": false,
+    "app/models/__init__.py": false,
+    "app/models/billing_category.py": false,
+    "app/models/customer.py": false,
+    "app/routes/__init__.py": false,
+    "app/routes/report_routes.py": false,
+    "app/services/__init__.py": false,
+    "app/services/billing_service.py": false,
+    "app/services/notification_service.py": false,
+    "run.py": true,
+    "sync_data.py": true
+  },
+  "auditoria_da_ia": [
+    {
+      "afirmacao": "O banco database.sqlite está commitado no repositório.",
+      "como_verificamos": "git ls-files | grep -i sqlite — nenhum resultado",
+      "origem": "IA (repetindo o business-context.md)",
+      "porque_errado": "Falso para o repositório Python. O .gitignore ignora *.sqlite e não há nenhum arquivo .sqlite rastreado. A IA repetiu o documento de contexto em vez de olhar o repositório."
+    },
+    {
+      "afirmacao": "Há um arquivo .env com credenciais reais commitado.",
+      "como_verificamos": "git ls-files | grep env — apenas .env.example",
+      "origem": "IA (repetindo o business-context.md)",
+      "porque_errado": "Falso. Só existe .env.example, sem valores. É a única das 7 perguntas do questionário cuja resposta honesta hoje é 'Sim'."
+    },
+    {
+      "afirmacao": "SQL Injection crítica e explorável em /api/reports/monthly.",
+      "como_verificamos": "grep -rn 'register_blueprint' — nenhum resultado; confirmado pelo módulo reachability.py deste pipeline",
+      "origem": "bandit B608 + IA",
+      "porque_errado": "O código É vulnerável, mas o blueprint report_bp nunca é registrado na aplicação: a rota retorna 404 hoje. É risco LATENTE, não exposição ativa. A ferramenta analisa arquivo por arquivo e não enxerga o grafo de chamadas."
+    },
+    {
+      "afirmacao": "SQL Injection na rota /delete (app/everything.py:205).",
+      "como_verificamos": "leitura manual de app/everything.py:196-207",
+      "origem": "bandit B608",
+      "porque_errado": "A f-string interpola TABLE_MAP[thing], um dicionário fechado de 4 itens definido na própria função. O usuário controla a chave, mas o valor só pode ser um dos 4 nomes de tabela — ou KeyError. Não há vetor de injeção. Descartado do relatório."
+    },
+    {
+      "afirmacao": "O SELECT * do dashboard expõe a senha na resposta HTTP.",
+      "como_verificamos": "leitura manual de app/everything.py:132-145",
+      "origem": "comentário no próprio código-fonte + IA",
+      "porque_errado": "A senha é carregada em memória, mas o loop de renderização usa apenas ['name', 'email', 'address'] — ela não sai na resposta. A IA acreditou no comentário do código em vez de ler o render. É over-fetch, severidade baixa."
+    },
+    {
+      "afirmacao": "Os testes do pipeline provam que o scoring é determinístico.",
+      "como_verificamos": "auditoria dirigida ao código gerado, antes do commit",
+      "origem": "código gerado por IA nesta sessão",
+      "porque_errado": "Um dos testes comparava listas de IDs sequenciais (DT-01, DT-02...) que são atribuídos DEPOIS da ordenação — ele passava mesmo se o .sort() fosse removido. Teste vacuamente verdadeiro. Corrigido para comparar (arquivo, linha)."
+    }
+  ],
+  "avisos_ferramentas": [],
+  "debitos": [
+    {
+      "alcancavel": true,
+      "arquivo": "app/everything.py",
+      "categoria": "Segurança",
+      "conceito": "weak_password_hash",
+      "descricao": "Use of weak MD5 hash for security. Consider usedforsecurity=False",
+      "esforco_sp": 3.0,
+      "ferramentas": [
+        "bandit"
+      ],
+      "id": "DT-01",
+      "impacto": "Senhas em MD5 são quebráveis em minutos. Derruba duas das sete respostas do questionário do cliente de R$ 8.000/mês — o contrato que dobraria o MRR de R$ 28.000.",
+      "linha": 168,
+      "memorial": [
+        "base técnica (alto) = 7.00",
+        "x expõe dados de cliente (1.6) = 11.20",
+        "x rota pública sem auth (1.3) = 14.56",
+        "+ questionário Q3, Q7 (6.0) = 20.56",
+        "+ caminho da release v2.1 (1.5) = 22.06",
+        "- esforço 3.0 SP (2.40) = 19.66"
+      ],
+      "nome": "Hash inseguro (MD5/SHA-1) em dado sensível",
+      "perguntas_questionario": [
+        3,
+        7
+      ],
+      "pontuacao": 19.66,
+      "prioridade": "Crítica",
+      "prioridade_tecnica": "alto",
+      "risco": "Alto",
+      "valor": "Segurança e conformidade — destrava o contrato enterprise"
+    },
+    {
+      "alcancavel": true,
+      "arquivo": "app/everything.py",
+      "categoria": "Segurança",
+      "conceito": "dynamic_sql",
+      "descricao": "Possible SQL injection vector through string-based query construction.",
+      "esforco_sp": 0.5,
+      "ferramentas": [
+        "bandit"
+      ],
+      "id": "DT-02",
+      "impacto": "Permite ler e alterar a base inteira sem autenticação: as horas faturadas dos 47 clientes estão no mesmo banco, sem isolamento. Um vazamento atinge os 3 clientes que respondem por 60% da receita.",
+      "linha": 219,
+      "memorial": [
+        "base técnica (alto) = 7.00",
+        "x expõe dados de cliente (1.6) = 11.20",
+        "x rota pública sem auth (1.3) = 14.56",
+        "+ questionário Q1 (4.0) = 18.56",
+        "+ caminho da release v2.1 (1.5) = 20.06",
+        "- esforço 0.5 SP (0.40) = 19.66"
+      ],
+      "nome": "SQL montado por concatenação de string",
+      "perguntas_questionario": [
+        1
+      ],
+      "pontuacao": 19.66,
+      "prioridade": "Crítica",
+      "prioridade_tecnica": "alto",
+      "risco": "Alto",
+      "valor": "Segurança e conformidade — destrava o contrato enterprise"
+    },
+    {
+      "alcancavel": true,
+      "arquivo": "sync_data.py",
+      "categoria": "Segurança",
+      "conceito": "hardcoded_secret",
+      "descricao": "Possible hardcoded password: 'ERP_TOKEN_production_abc123xyz789'",
+      "esforco_sp": 2.0,
+      "ferramentas": [
+        "bandit"
+      ],
+      "id": "DT-03",
+      "impacto": "Credencial de produção exposta no código e no histórico do Git. Responder 'Não' à pergunta 4 do questionário trava a assinatura do contrato enterprise; apagar o arquivo não basta, exige rotação.",
+      "linha": 10,
+      "memorial": [
+        "base técnica (alto) = 7.00",
+        "x expõe dados de cliente (1.6) = 11.20",
+        "+ questionário Q4 (4.0) = 15.20",
+        "- esforço 2.0 SP (1.60) = 13.60"
+      ],
+      "nome": "Segredo hardcoded no código-fonte",
+      "perguntas_questionario": [
+        4
+      ],
+      "pontuacao": 13.6,
+      "prioridade": "Alta",
+      "prioridade_tecnica": "alto",
+      "risco": "Médio",
+      "valor": "Segurança e conformidade — destrava o contrato enterprise"
+    },
+    {
+      "alcancavel": true,
+      "arquivo": "app/everything.py",
+      "categoria": "Segurança",
+      "conceito": "hardcoded_secret",
+      "descricao": "Possible hardcoded password: '123456'",
+      "esforco_sp": 2.0,
+      "ferramentas": [
+        "bandit"
+      ],
+      "id": "DT-04",
+      "impacto": "Credencial de produção exposta no código e no histórico do Git. Responder 'Não' à pergunta 4 do questionário trava a assinatura do contrato enterprise; apagar o arquivo não basta, exige rotação.",
+      "linha": 6,
+      "memorial": [
+        "base técnica (alto) = 7.00",
+        "x rota pública sem auth (1.3) = 9.10",
+        "+ questionário Q4 (4.0) = 13.10",
+        "+ caminho da release v2.1 (1.5) = 14.60",
+        "- esforço 2.0 SP (1.60) = 13.00"
+      ],
+      "nome": "Segredo hardcoded no código-fonte",
+      "perguntas_questionario": [
+        4
+      ],
+      "pontuacao": 13.0,
+      "prioridade": "Alta",
+      "prioridade_tecnica": "alto",
+      "risco": "Alto",
+      "valor": "Segurança e conformidade — destrava o contrato enterprise"
+    },
+    {
+      "alcancavel": false,
+      "arquivo": "app/routes/report_routes.py",
+      "categoria": "Segurança",
+      "conceito": "dynamic_sql",
+      "descricao": "Possible SQL injection vector through string-based query construction.",
+      "esforco_sp": 0.5,
+      "ferramentas": [
+        "bandit"
+      ],
+      "id": "DT-05",
+      "impacto": "Permite ler e alterar a base inteira sem autenticação: as horas faturadas dos 47 clientes estão no mesmo banco, sem isolamento. Um vazamento atinge os 3 clientes que respondem por 60% da receita.",
+      "linha": 29,
+      "memorial": [
+        "base técnica (alto) = 7.00",
+        "x código morto (0.35) = 2.45",
+        "x expõe dados de cliente (1.6) = 3.92",
+        "+ questionário Q1 (4.0) = 7.92",
+        "+ caminho da release v2.1 (1.5) = 9.42",
+        "- esforço 0.5 SP (0.40) = 9.02"
+      ],
+      "nome": "SQL montado por concatenação de string",
+      "perguntas_questionario": [
+        1
+      ],
+      "pontuacao": 9.02,
+      "prioridade": "Média",
+      "prioridade_tecnica": "alto",
+      "risco": "Baixo",
+      "valor": "Segurança e conformidade — destrava o contrato enterprise"
+    },
+    {
+      "alcancavel": false,
+      "arquivo": "app/routes/report_routes.py",
+      "categoria": "Segurança",
+      "conceito": "dynamic_sql",
+      "descricao": "Possible SQL injection vector through string-based query construction.",
+      "esforco_sp": 0.5,
+      "ferramentas": [
+        "bandit"
+      ],
+      "id": "DT-06",
+      "impacto": "Permite ler e alterar a base inteira sem autenticação: as horas faturadas dos 47 clientes estão no mesmo banco, sem isolamento. Um vazamento atinge os 3 clientes que respondem por 60% da receita.",
+      "linha": 44,
+      "memorial": [
+        "base técnica (alto) = 7.00",
+        "x código morto (0.35) = 2.45",
+        "x expõe dados de cliente (1.6) = 3.92",
+        "+ questionário Q1 (4.0) = 7.92",
+        "+ caminho da release v2.1 (1.5) = 9.42",
+        "- esforço 0.5 SP (0.40) = 9.02"
+      ],
+      "nome": "SQL montado por concatenação de string",
+      "perguntas_questionario": [
+        1
+      ],
+      "pontuacao": 9.02,
+      "prioridade": "Média",
+      "prioridade_tecnica": "alto",
+      "risco": "Baixo",
+      "valor": "Segurança e conformidade — destrava o contrato enterprise"
+    },
+    {
+      "alcancavel": false,
+      "arquivo": "app/routes/report_routes.py",
+      "categoria": "Segurança",
+      "conceito": "dynamic_sql",
+      "descricao": "Possible SQL injection vector through string-based query construction.",
+      "esforco_sp": 0.5,
+      "ferramentas": [
+        "bandit"
+      ],
+      "id": "DT-07",
+      "impacto": "Permite ler e alterar a base inteira sem autenticação: as horas faturadas dos 47 clientes estão no mesmo banco, sem isolamento. Um vazamento atinge os 3 clientes que respondem por 60% da receita.",
+      "linha": 107,
+      "memorial": [
+        "base técnica (alto) = 7.00",
+        "x código morto (0.35) = 2.45",
+        "x expõe dados de cliente (1.6) = 3.92",
+        "+ questionário Q1 (4.0) = 7.92",
+        "+ caminho da release v2.1 (1.5) = 9.42",
+        "- esforço 0.5 SP (0.40) = 9.02"
+      ],
+      "nome": "SQL montado por concatenação de string",
+      "perguntas_questionario": [
+        1
+      ],
+      "pontuacao": 9.02,
+      "prioridade": "Média",
+      "prioridade_tecnica": "alto",
+      "risco": "Baixo",
+      "valor": "Segurança e conformidade — destrava o contrato enterprise"
+    },
+    {
+      "alcancavel": false,
+      "arquivo": "app/services/billing_service.py",
+      "categoria": "Segurança",
+      "conceito": "dynamic_sql",
+      "descricao": "Possible SQL injection vector through string-based query construction.",
+      "esforco_sp": 0.5,
+      "ferramentas": [
+        "bandit"
+      ],
+      "id": "DT-08",
+      "impacto": "Permite ler e alterar a base inteira sem autenticação: as horas faturadas dos 47 clientes estão no mesmo banco, sem isolamento. Um vazamento atinge os 3 clientes que respondem por 60% da receita.",
+      "linha": 27,
+      "memorial": [
+        "base técnica (alto) = 7.00",
+        "x código morto (0.35) = 2.45",
+        "x expõe dados de cliente (1.6) = 3.92",
+        "+ questionário Q1 (4.0) = 7.92",
+        "+ caminho da release v2.1 (1.5) = 9.42",
+        "- esforço 0.5 SP (0.40) = 9.02"
+      ],
+      "nome": "SQL montado por concatenação de string",
+      "perguntas_questionario": [
+        1
+      ],
+      "pontuacao": 9.02,
+      "prioridade": "Média",
+      "prioridade_tecnica": "alto",
+      "risco": "Baixo",
+      "valor": "Segurança e conformidade — destrava o contrato enterprise"
+    },
+    {
+      "alcancavel": false,
+      "arquivo": "app/routes/report_routes.py",
+      "categoria": "Segurança",
+      "conceito": "hardcoded_secret",
+      "descricao": "Possible hardcoded password: 'CONTABILIZEI_TOKEN_prod_123abc'",
+      "esforco_sp": 2.0,
+      "ferramentas": [
+        "bandit"
+      ],
+      "id": "DT-09",
+      "impacto": "Credencial de produção exposta no código e no histórico do Git. Responder 'Não' à pergunta 4 do questionário trava a assinatura do contrato enterprise; apagar o arquivo não basta, exige rotação.",
+      "linha": 103,
+      "memorial": [
+        "base técnica (alto) = 7.00",
+        "x código morto (0.35) = 2.45",
+        "x expõe dados de cliente (1.6) = 3.92",
+        "+ questionário Q4 (4.0) = 7.92",
+        "+ caminho da release v2.1 (1.5) = 9.42",
+        "- esforço 2.0 SP (1.60) = 7.82"
+      ],
+      "nome": "Segredo hardcoded no código-fonte",
+      "perguntas_questionario": [
+        4
+      ],
+      "pontuacao": 7.82,
+      "prioridade": "Média",
+      "prioridade_tecnica": "alto",
+      "risco": "Baixo",
+      "valor": "Segurança e conformidade — destrava o contrato enterprise"
+    },
+    {
+      "alcancavel": false,
+      "arquivo": "app/models/customer.py",
+      "categoria": "Segurança",
+      "conceito": "dynamic_sql",
+      "descricao": "Possible SQL injection vector through string-based query construction.",
+      "esforco_sp": 0.5,
+      "ferramentas": [
+        "bandit"
+      ],
+      "id": "DT-10",
+      "impacto": "Permite ler e alterar a base inteira sem autenticação: as horas faturadas dos 47 clientes estão no mesmo banco, sem isolamento. Um vazamento atinge os 3 clientes que respondem por 60% da receita.",
+      "linha": 38,
+      "memorial": [
+        "base técnica (alto) = 7.00",
+        "x código morto (0.35) = 2.45",
+        "x expõe dados de cliente (1.6) = 3.92",
+        "+ questionário Q1 (4.0) = 7.92",
+        "- esforço 0.5 SP (0.40) = 7.52"
+      ],
+      "nome": "SQL montado por concatenação de string",
+      "perguntas_questionario": [
+        1
+      ],
+      "pontuacao": 7.52,
+      "prioridade": "Média",
+      "prioridade_tecnica": "alto",
+      "risco": "Baixo",
+      "valor": "Segurança e conformidade — destrava o contrato enterprise"
+    },
+    {
+      "alcancavel": true,
+      "arquivo": "sync_data.py",
+      "categoria": "Performance",
+      "conceito": "missing_timeout",
+      "descricao": "Requests call without timeout",
+      "esforco_sp": 0.5,
+      "ferramentas": [
+        "bandit",
+        "pylint"
+      ],
+      "id": "DT-11",
+      "impacto": "Chamada externa sem timeout prende o processo. Com 1 VPS de 2GB atendendo 180 usuários e sem monitoramento, a queda só é descoberta quando o cliente liga.",
+      "linha": 71,
+      "memorial": [
+        "base técnica (alto) = 7.00",
+        "- esforço 0.5 SP (0.40) = 6.60"
+      ],
+      "nome": "Chamada HTTP sem timeout",
+      "perguntas_questionario": [],
+      "pontuacao": 6.6,
+      "prioridade": "Média",
+      "prioridade_tecnica": "alto",
+      "risco": "Médio",
+      "valor": "Disponibilidade — protege o uptime de 99,1%"
+    },
+    {
+      "alcancavel": true,
+      "arquivo": "app/everything.py",
+      "categoria": "Arquitetura",
+      "conceito": "import_error",
+      "descricao": "Unable to import 'flask'",
+      "esforco_sp": 0.5,
+      "ferramentas": [
+        "pylint"
+      ],
+      "id": "DT-12",
+      "impacto": "Sinal de ambiente de análise incompleto, não de defeito do produto. Verificar antes de reportar ao cliente.",
+      "linha": 2,
+      "memorial": [
+        "base técnica (medio) = 4.00",
+        "x rota pública sem auth (1.3) = 5.20",
+        "+ caminho da release v2.1 (1.5) = 6.70",
+        "- esforço 0.5 SP (0.40) = 6.30"
+      ],
+      "nome": "Import não resolvido no ambiente de análise",
+      "perguntas_questionario": [],
+      "pontuacao": 6.3,
+      "prioridade": "Média",
+      "prioridade_tecnica": "medio",
+      "risco": "Médio",
+      "valor": "Higiene do ambiente de análise"
+    },
+    {
+      "alcancavel": false,
+      "arquivo": "app/services/notification_service.py",
+      "categoria": "Segurança",
+      "conceito": "hardcoded_secret",
+      "descricao": "Possible hardcoded password: 'SMSGLOBAL_SECRET_xyz789'",
+      "esforco_sp": 2.0,
+      "ferramentas": [
+        "bandit"
+      ],
+      "id": "DT-13",
+      "impacto": "Credencial de produção exposta no código e no histórico do Git. Responder 'Não' à pergunta 4 do questionário trava a assinatura do contrato enterprise; apagar o arquivo não basta, exige rotação.",
+      "linha": 10,
+      "memorial": [
+        "base técnica (alto) = 7.00",
+        "x código morto (0.35) = 2.45",
+        "+ questionário Q4 (4.0) = 6.45",
+        "- esforço 2.0 SP (1.60) = 4.85"
+      ],
+      "nome": "Segredo hardcoded no código-fonte",
+      "perguntas_questionario": [
+        4
+      ],
+      "pontuacao": 4.85,
+      "prioridade": "Baixa",
+      "prioridade_tecnica": "alto",
+      "risco": "Baixo",
+      "valor": "Segurança e conformidade — destrava o contrato enterprise"
+    },
+    {
+      "alcancavel": false,
+      "arquivo": "app/services/notification_service.py",
+      "categoria": "Segurança",
+      "conceito": "hardcoded_secret",
+      "descricao": "Possible hardcoded password: 'gmail_app_password_hardcoded_123'",
+      "esforco_sp": 2.0,
+      "ferramentas": [
+        "bandit"
+      ],
+      "id": "DT-14",
+      "impacto": "Credencial de produção exposta no código e no histórico do Git. Responder 'Não' à pergunta 4 do questionário trava a assinatura do contrato enterprise; apagar o arquivo não basta, exige rotação.",
+      "linha": 15,
+      "memorial": [
+        "base técnica (alto) = 7.00",
+        "x código morto (0.35) = 2.45",
+        "+ questionário Q4 (4.0) = 6.45",
+        "- esforço 2.0 SP (1.60) = 4.85"
+      ],
+      "nome": "Segredo hardcoded no código-fonte",
+      "perguntas_questionario": [
+        4
+      ],
+      "pontuacao": 4.85,
+      "prioridade": "Baixa",
+      "prioridade_tecnica": "alto",
+      "risco": "Baixo",
+      "valor": "Segurança e conformidade — destrava o contrato enterprise"
+    },
+    {
+      "alcancavel": true,
+      "arquivo": "app/everything.py",
+      "categoria": "Design",
+      "conceito": "unused_variable",
+      "descricao": "Unused variable 'total_hours'",
+      "esforco_sp": 0.5,
+      "ferramentas": [
+        "pylint"
+      ],
+      "id": "DT-15",
+      "impacto": "Aumenta o custo de manutenção de um time de 2 desenvolvedores com capacidade de 6 story points por semana e sem QA.",
+      "linha": 76,
+      "memorial": [
+        "base técnica (baixo) = 2.00",
+        "x rota pública sem auth (1.3) = 2.60",
+        "+ caminho da release v2.1 (1.5) = 4.10",
+        "- esforço 0.5 SP (0.40) = 3.70"
+      ],
+      "nome": "Variável calculada e nunca usada",
+      "perguntas_questionario": [],
+      "pontuacao": 3.7,
+      "prioridade": "Baixa",
+      "prioridade_tecnica": "baixo",
+      "risco": "Baixo",
+      "valor": "Qualidade — acelera o time de 2 devs"
+    },
+    {
+      "alcancavel": true,
+      "arquivo": "app/everything.py",
+      "categoria": "Design",
+      "conceito": "unused_variable",
+      "descricao": "Unused variable 'avg_rate'",
+      "esforco_sp": 0.5,
+      "ferramentas": [
+        "pylint"
+      ],
+      "id": "DT-16",
+      "impacto": "Aumenta o custo de manutenção de um time de 2 desenvolvedores com capacidade de 6 story points por semana e sem QA.",
+      "linha": 77,
+      "memorial": [
+        "base técnica (baixo) = 2.00",
+        "x rota pública sem auth (1.3) = 2.60",
+        "+ caminho da release v2.1 (1.5) = 4.10",
+        "- esforço 0.5 SP (0.40) = 3.70"
+      ],
+      "nome": "Variável calculada e nunca usada",
+      "perguntas_questionario": [],
+      "pontuacao": 3.7,
+      "prioridade": "Baixa",
+      "prioridade_tecnica": "baixo",
+      "risco": "Baixo",
+      "valor": "Qualidade — acelera o time de 2 devs"
+    },
+    {
+      "alcancavel": true,
+      "arquivo": "app/everything.py",
+      "categoria": "Design",
+      "conceito": "unused_variable",
+      "descricao": "Unused variable 'entry_count'",
+      "esforco_sp": 0.5,
+      "ferramentas": [
+        "pylint"
+      ],
+      "id": "DT-17",
+      "impacto": "Aumenta o custo de manutenção de um time de 2 desenvolvedores com capacidade de 6 story points por semana e sem QA.",
+      "linha": 78,
+      "memorial": [
+        "base técnica (baixo) = 2.00",
+        "x rota pública sem auth (1.3) = 2.60",
+        "+ caminho da release v2.1 (1.5) = 4.10",
+        "- esforço 0.5 SP (0.40) = 3.70"
+      ],
+      "nome": "Variável calculada e nunca usada",
+      "perguntas_questionario": [],
+      "pontuacao": 3.7,
+      "prioridade": "Baixa",
+      "prioridade_tecnica": "baixo",
+      "risco": "Baixo",
+      "valor": "Qualidade — acelera o time de 2 devs"
+    },
+    {
+      "alcancavel": true,
+      "arquivo": "app/everything.py",
+      "categoria": "Design",
+      "conceito": "unused_variable",
+      "descricao": "Unused variable 'last_customer_id'",
+      "esforco_sp": 0.5,
+      "ferramentas": [
+        "pylint"
+      ],
+      "id": "DT-18",
+      "impacto": "Aumenta o custo de manutenção de um time de 2 desenvolvedores com capacidade de 6 story points por semana e sem QA.",
+      "linha": 79,
+      "memorial": [
+        "base técnica (baixo) = 2.00",
+        "x rota pública sem auth (1.3) = 2.60",
+        "+ caminho da release v2.1 (1.5) = 4.10",
+        "- esforço 0.5 SP (0.40) = 3.70"
+      ],
+      "nome": "Variável calculada e nunca usada",
+      "perguntas_questionario": [],
+      "pontuacao": 3.7,
+      "prioridade": "Baixa",
+      "prioridade_tecnica": "baixo",
+      "risco": "Baixo",
+      "valor": "Qualidade — acelera o time de 2 devs"
+    },
+    {
+      "alcancavel": true,
+      "arquivo": "app/everything.py",
+      "categoria": "Design",
+      "conceito": "todo_comment",
+      "descricao": "TODO: adicionar paginação aqui",
+      "esforco_sp": 0.5,
+      "ferramentas": [
+        "pylint"
+      ],
+      "id": "DT-19",
+      "impacto": "Aumenta o custo de manutenção de um time de 2 desenvolvedores com capacidade de 6 story points por semana e sem QA.",
+      "linha": 83,
+      "memorial": [
+        "base técnica (baixo) = 2.00",
+        "x rota pública sem auth (1.3) = 2.60",
+        "+ caminho da release v2.1 (1.5) = 4.10",
+        "- esforço 0.5 SP (0.40) = 3.70"
+      ],
+      "nome": "TODO deixado no código",
+      "perguntas_questionario": [],
+      "pontuacao": 3.7,
+      "prioridade": "Baixa",
+      "prioridade_tecnica": "baixo",
+      "risco": "Baixo",
+      "valor": "Qualidade — acelera o time de 2 devs"
+    },
+    {
+      "alcancavel": true,
+      "arquivo": "app/everything.py",
+      "categoria": "Design",
+      "conceito": "shadowed_builtin",
+      "descricao": "Redefining built-in 'id'",
+      "esforco_sp": 0.5,
+      "ferramentas": [
+        "pylint"
+      ],
+      "id": "DT-20",
+      "impacto": "Aumenta o custo de manutenção de um time de 2 desenvolvedores com capacidade de 6 story points por semana e sem QA.",
+      "linha": 196,
+      "memorial": [
+        "base técnica (baixo) = 2.00",
+        "x rota pública sem auth (1.3) = 2.60",
+        "+ caminho da release v2.1 (1.5) = 4.10",
+        "- esforço 0.5 SP (0.40) = 3.70"
+      ],
+      "nome": "Nome sombreia um builtin do Python",
+      "perguntas_questionario": [],
+      "pontuacao": 3.7,
+      "prioridade": "Baixa",
+      "prioridade_tecnica": "baixo",
+      "risco": "Baixo",
+      "valor": "Qualidade — acelera o time de 2 devs"
+    },
+    {
+      "alcancavel": false,
+      "arquivo": "app/routes/report_routes.py",
+      "categoria": "Performance",
+      "conceito": "missing_timeout",
+      "descricao": "Requests call without timeout",
+      "esforco_sp": 0.5,
+      "ferramentas": [
+        "bandit",
+        "pylint"
+      ],
+      "id": "DT-21",
+      "impacto": "Chamada externa sem timeout prende o processo. Com 1 VPS de 2GB atendendo 180 usuários e sem monitoramento, a queda só é descoberta quando o cliente liga.",
+      "linha": 116,
+      "memorial": [
+        "base técnica (alto) = 7.00",
+        "x código morto (0.35) = 2.45",
+        "+ caminho da release v2.1 (1.5) = 3.95",
+        "- esforço 0.5 SP (0.40) = 3.55"
+      ],
+      "nome": "Chamada HTTP sem timeout",
+      "perguntas_questionario": [],
+      "pontuacao": 3.55,
+      "prioridade": "Baixa",
+      "prioridade_tecnica": "alto",
+      "risco": "Baixo",
+      "valor": "Disponibilidade — protege o uptime de 99,1%"
+    },
+    {
+      "alcancavel": true,
+      "arquivo": "app/everything.py",
+      "categoria": "Manutenibilidade",
+      "conceito": "excessive_locals",
+      "descricao": "Too many local variables (27/15)",
+      "esforco_sp": 2.0,
+      "ferramentas": [
+        "pylint"
+      ],
+      "id": "DT-22",
+      "impacto": "Aumenta o custo de manutenção de um time de 2 desenvolvedores com capacidade de 6 story points por semana e sem QA.",
+      "linha": 40,
+      "memorial": [
+        "base técnica (baixo) = 2.00",
+        "x rota pública sem auth (1.3) = 2.60",
+        "+ caminho da release v2.1 (1.5) = 4.10",
+        "- esforço 2.0 SP (1.60) = 2.50"
+      ],
+      "nome": "Excesso de variáveis locais",
+      "perguntas_questionario": [],
+      "pontuacao": 2.5,
+      "prioridade": "Baixa",
+      "prioridade_tecnica": "baixo",
+      "risco": "Baixo",
+      "valor": "Manutenibilidade — reduz o risco da saída do dev em 6 semanas"
+    },
+    {
+      "alcancavel": false,
+      "arquivo": "app/routes/report_routes.py",
+      "categoria": "Arquitetura",
+      "conceito": "import_error",
+      "descricao": "Unable to import 'flask'",
+      "esforco_sp": 0.5,
+      "ferramentas": [
+        "pylint"
+      ],
+      "id": "DT-23",
+      "impacto": "Sinal de ambiente de análise incompleto, não de defeito do produto. Verificar antes de reportar ao cliente.",
+      "linha": 5,
+      "memorial": [
+        "base técnica (medio) = 4.00",
+        "x código morto (0.35) = 1.40",
+        "+ caminho da release v2.1 (1.5) = 2.90",
+        "- esforço 0.5 SP (0.40) = 2.50"
+      ],
+      "nome": "Import não resolvido no ambiente de análise",
+      "perguntas_questionario": [],
+      "pontuacao": 2.5,
+      "prioridade": "Baixa",
+      "prioridade_tecnica": "medio",
+      "risco": "Baixo",
+      "valor": "Higiene do ambiente de análise"
+    },
+    {
+      "alcancavel": false,
+      "arquivo": "app/services/notification_service.py",
+      "categoria": "Performance",
+      "conceito": "missing_timeout",
+      "descricao": "Requests call without timeout",
+      "esforco_sp": 0.5,
+      "ferramentas": [
+        "bandit",
+        "pylint"
+      ],
+      "id": "DT-24",
+      "impacto": "Chamada externa sem timeout prende o processo. Com 1 VPS de 2GB atendendo 180 usuários e sem monitoramento, a queda só é descoberta quando o cliente liga.",
+      "linha": 44,
+      "memorial": [
+        "base técnica (alto) = 7.00",
+        "x código morto (0.35) = 2.45",
+        "- esforço 0.5 SP (0.40) = 2.05"
+      ],
+      "nome": "Chamada HTTP sem timeout",
+      "perguntas_questionario": [],
+      "pontuacao": 2.05,
+      "prioridade": "Baixa",
+      "prioridade_tecnica": "alto",
+      "risco": "Baixo",
+      "valor": "Disponibilidade — protege o uptime de 99,1%"
+    },
+    {
+      "alcancavel": false,
+      "arquivo": "app/services/notification_service.py",
+      "categoria": "Performance",
+      "conceito": "missing_timeout",
+      "descricao": "Requests call without timeout",
+      "esforco_sp": 0.5,
+      "ferramentas": [
+        "bandit",
+        "pylint"
+      ],
+      "id": "DT-25",
+      "impacto": "Chamada externa sem timeout prende o processo. Com 1 VPS de 2GB atendendo 180 usuários e sem monitoramento, a queda só é descoberta quando o cliente liga.",
+      "linha": 53,
+      "memorial": [
+        "base técnica (alto) = 7.00",
+        "x código morto (0.35) = 2.45",
+        "- esforço 0.5 SP (0.40) = 2.05"
+      ],
+      "nome": "Chamada HTTP sem timeout",
+      "perguntas_questionario": [],
+      "pontuacao": 2.05,
+      "prioridade": "Baixa",
+      "prioridade_tecnica": "alto",
+      "risco": "Baixo",
+      "valor": "Disponibilidade — protege o uptime de 99,1%"
+    },
+    {
+      "alcancavel": false,
+      "arquivo": "app/routes/report_routes.py",
+      "categoria": "Design",
+      "conceito": "unnecessary_else_after_return",
+      "descricao": "Unnecessary \"elif\" after \"return\", remove the leading \"el\" from \"elif\"",
+      "esforco_sp": 0.5,
+      "ferramentas": [
+        "pylint"
+      ],
+      "id": "DT-26",
+      "impacto": "Aumenta o custo de manutenção de um time de 2 desenvolvedores com capacidade de 6 story points por semana e sem QA.",
+      "linha": 60,
+      "memorial": [
+        "base técnica (baixo) = 2.00",
+        "x código morto (0.35) = 0.70",
+        "+ caminho da release v2.1 (1.5) = 2.20",
+        "- esforço 0.5 SP (0.40) = 1.80"
+      ],
+      "nome": "else desnecessário após return",
+      "perguntas_questionario": [],
+      "pontuacao": 1.8,
+      "prioridade": "Baixa",
+      "prioridade_tecnica": "baixo",
+      "risco": "Baixo",
+      "valor": "Qualidade — acelera o time de 2 devs"
+    },
+    {
+      "alcancavel": true,
+      "arquivo": "app/everything.py",
+      "categoria": "Manutenibilidade",
+      "conceito": "cyclomatic_complexity",
+      "descricao": "Cyclomatic complexity for get_db: 1 (rank A)",
+      "esforco_sp": 3.0,
+      "ferramentas": [
+        "radon"
+      ],
+      "id": "DT-27",
+      "impacto": "Função complexa demais para alterar com segurança. O desenvolvedor que escreveu 90% do código sai em 6 semanas, e não há testes nem staging — o conhecimento sai junto com ele.",
+      "linha": 31,
+      "memorial": [
+        "base técnica (baixo) = 2.00",
+        "x rota pública sem auth (1.3) = 2.60",
+        "+ caminho da release v2.1 (1.5) = 4.10",
+        "- esforço 3.0 SP (2.40) = 1.70"
+      ],
+      "nome": "Função com complexidade ciclomática alta",
+      "perguntas_questionario": [],
+      "pontuacao": 1.7,
+      "prioridade": "Baixa",
+      "prioridade_tecnica": "baixo",
+      "risco": "Baixo",
+      "valor": "Manutenibilidade — reduz o risco da saída do dev em 6 semanas"
+    },
+    {
+      "alcancavel": true,
+      "arquivo": "app/everything.py",
+      "categoria": "Manutenibilidade",
+      "conceito": "cyclomatic_complexity",
+      "descricao": "Cyclomatic complexity for dashboard: 16 (rank C)",
+      "esforco_sp": 3.0,
+      "ferramentas": [
+        "radon"
+      ],
+      "id": "DT-28",
+      "impacto": "Função complexa demais para alterar com segurança. O desenvolvedor que escreveu 90% do código sai em 6 semanas, e não há testes nem staging — o conhecimento sai junto com ele.",
+      "linha": 40,
+      "memorial": [
+        "base técnica (baixo) = 2.00",
+        "x rota pública sem auth (1.3) = 2.60",
+        "+ caminho da release v2.1 (1.5) = 4.10",
+        "- esforço 3.0 SP (2.40) = 1.70"
+      ],
+      "nome": "Função com complexidade ciclomática alta",
+      "perguntas_questionario": [],
+      "pontuacao": 1.7,
+      "prioridade": "Baixa",
+      "prioridade_tecnica": "baixo",
+      "risco": "Baixo",
+      "valor": "Manutenibilidade — reduz o risco da saída do dev em 6 semanas"
+    },
+    {
+      "alcancavel": true,
+      "arquivo": "app/everything.py",
+      "categoria": "Manutenibilidade",
+      "conceito": "cyclomatic_complexity",
+      "descricao": "Cyclomatic complexity for save: 6 (rank B)",
+      "esforco_sp": 3.0,
+      "ferramentas": [
+        "radon"
+      ],
+      "id": "DT-29",
+      "impacto": "Função complexa demais para alterar com segurança. O desenvolvedor que escreveu 90% do código sai em 6 semanas, e não há testes nem staging — o conhecimento sai junto com ele.",
+      "linha": 153,
+      "memorial": [
+        "base técnica (baixo) = 2.00",
+        "x rota pública sem auth (1.3) = 2.60",
+        "+ caminho da release v2.1 (1.5) = 4.10",
+        "- esforço 3.0 SP (2.40) = 1.70"
+      ],
+      "nome": "Função com complexidade ciclomática alta",
+      "perguntas_questionario": [],
+      "pontuacao": 1.7,
+      "prioridade": "Baixa",
+      "prioridade_tecnica": "baixo",
+      "risco": "Baixo",
+      "valor": "Manutenibilidade — reduz o risco da saída do dev em 6 semanas"
+    },
+    {
+      "alcancavel": true,
+      "arquivo": "app/everything.py",
+      "categoria": "Manutenibilidade",
+      "conceito": "cyclomatic_complexity",
+      "descricao": "Cyclomatic complexity for delete: 1 (rank A)",
+      "esforco_sp": 3.0,
+      "ferramentas": [
+        "radon"
+      ],
+      "id": "DT-30",
+      "impacto": "Função complexa demais para alterar com segurança. O desenvolvedor que escreveu 90% do código sai em 6 semanas, e não há testes nem staging — o conhecimento sai junto com ele.",
+      "linha": 196,
+      "memorial": [
+        "base técnica (baixo) = 2.00",
+        "x rota pública sem auth (1.3) = 2.60",
+        "+ caminho da release v2.1 (1.5) = 4.10",
+        "- esforço 3.0 SP (2.40) = 1.70"
+      ],
+      "nome": "Função com complexidade ciclomática alta",
+      "perguntas_questionario": [],
+      "pontuacao": 1.7,
+      "prioridade": "Baixa",
+      "prioridade_tecnica": "baixo",
+      "risco": "Baixo",
+      "valor": "Manutenibilidade — reduz o risco da saída do dev em 6 semanas"
+    },
+    {
+      "alcancavel": true,
+      "arquivo": "app/everything.py",
+      "categoria": "Manutenibilidade",
+      "conceito": "cyclomatic_complexity",
+      "descricao": "Cyclomatic complexity for report: 3 (rank A)",
+      "esforco_sp": 3.0,
+      "ferramentas": [
+        "radon"
+      ],
+      "id": "DT-31",
+      "impacto": "Função complexa demais para alterar com segurança. O desenvolvedor que escreveu 90% do código sai em 6 semanas, e não há testes nem staging — o conhecimento sai junto com ele.",
+      "linha": 211,
+      "memorial": [
+        "base técnica (baixo) = 2.00",
+        "x rota pública sem auth (1.3) = 2.60",
+        "+ caminho da release v2.1 (1.5) = 4.10",
+        "- esforço 3.0 SP (2.40) = 1.70"
+      ],
+      "nome": "Função com complexidade ciclomática alta",
+      "perguntas_questionario": [],
+      "pontuacao": 1.7,
+      "prioridade": "Baixa",
+      "prioridade_tecnica": "baixo",
+      "risco": "Baixo",
+      "valor": "Manutenibilidade — reduz o risco da saída do dev em 6 semanas"
+    },
+    {
+      "alcancavel": false,
+      "arquivo": "app/routes/report_routes.py",
+      "categoria": "Manutenibilidade",
+      "conceito": "broad_exception",
+      "descricao": "Catching too general exception Exception",
+      "esforco_sp": 1.0,
+      "ferramentas": [
+        "pylint"
+      ],
+      "id": "DT-32",
+      "impacto": "Aumenta o custo de manutenção de um time de 2 desenvolvedores com capacidade de 6 story points por semana e sem QA.",
+      "linha": 127,
+      "memorial": [
+        "base técnica (baixo) = 2.00",
+        "x código morto (0.35) = 0.70",
+        "+ caminho da release v2.1 (1.5) = 2.20",
+        "- esforço 1.0 SP (0.80) = 1.40"
+      ],
+      "nome": "Captura de exceção genérica demais",
+      "perguntas_questionario": [],
+      "pontuacao": 1.4,
+      "prioridade": "Baixa",
+      "prioridade_tecnica": "baixo",
+      "risco": "Baixo",
+      "valor": "Confiabilidade — evita erro de faturamento"
+    },
+    {
+      "alcancavel": false,
+      "arquivo": "app/routes/report_routes.py",
+      "categoria": "Manutenibilidade",
+      "conceito": "swallowed_exception",
+      "descricao": "Try, Except, Pass detected.",
+      "esforco_sp": 1.0,
+      "ferramentas": [
+        "bandit"
+      ],
+      "id": "DT-33",
+      "impacto": "Falha silenciosa: a fatura é calculada e não é gravada, sem ninguém saber. Sem monitoramento, o erro aparece na contestação do cliente.",
+      "linha": 127,
+      "memorial": [
+        "base técnica (baixo) = 2.00",
+        "x código morto (0.35) = 0.70",
+        "+ caminho da release v2.1 (1.5) = 2.20",
+        "- esforço 1.0 SP (0.80) = 1.40"
+      ],
+      "nome": "Exceção engolida silenciosamente",
+      "perguntas_questionario": [],
+      "pontuacao": 1.4,
+      "prioridade": "Baixa",
+      "prioridade_tecnica": "baixo",
+      "risco": "Baixo",
+      "valor": "Confiabilidade — evita erro de faturamento"
+    },
+    {
+      "alcancavel": false,
+      "arquivo": "app/services/billing_service.py",
+      "categoria": "Manutenibilidade",
+      "conceito": "broad_exception",
+      "descricao": "Catching too general exception Exception",
+      "esforco_sp": 1.0,
+      "ferramentas": [
+        "pylint"
+      ],
+      "id": "DT-34",
+      "impacto": "Aumenta o custo de manutenção de um time de 2 desenvolvedores com capacidade de 6 story points por semana e sem QA.",
+      "linha": 77,
+      "memorial": [
+        "base técnica (baixo) = 2.00",
+        "x código morto (0.35) = 0.70",
+        "+ caminho da release v2.1 (1.5) = 2.20",
+        "- esforço 1.0 SP (0.80) = 1.40"
+      ],
+      "nome": "Captura de exceção genérica demais",
+      "perguntas_questionario": [],
+      "pontuacao": 1.4,
+      "prioridade": "Baixa",
+      "prioridade_tecnica": "baixo",
+      "risco": "Baixo",
+      "valor": "Confiabilidade — evita erro de faturamento"
+    },
+    {
+      "alcancavel": false,
+      "arquivo": "app/services/billing_service.py",
+      "categoria": "Manutenibilidade",
+      "conceito": "swallowed_exception",
+      "descricao": "Try, Except, Pass detected.",
+      "esforco_sp": 1.0,
+      "ferramentas": [
+        "bandit"
+      ],
+      "id": "DT-35",
+      "impacto": "Falha silenciosa: a fatura é calculada e não é gravada, sem ninguém saber. Sem monitoramento, o erro aparece na contestação do cliente.",
+      "linha": 77,
+      "memorial": [
+        "base técnica (baixo) = 2.00",
+        "x código morto (0.35) = 0.70",
+        "+ caminho da release v2.1 (1.5) = 2.20",
+        "- esforço 1.0 SP (0.80) = 1.40"
+      ],
+      "nome": "Exceção engolida silenciosamente",
+      "perguntas_questionario": [],
+      "pontuacao": 1.4,
+      "prioridade": "Baixa",
+      "prioridade_tecnica": "baixo",
+      "risco": "Baixo",
+      "valor": "Confiabilidade — evita erro de faturamento"
+    },
+    {
+      "alcancavel": true,
+      "arquivo": "sync_data.py",
+      "categoria": "Manutenibilidade",
+      "conceito": "pylint:W0621",
+      "descricao": "Redefining name 'dry_run' from outer scope (line 108)",
+      "esforco_sp": 1.0,
+      "ferramentas": [
+        "pylint"
+      ],
+      "id": "DT-36",
+      "impacto": "Aumenta o custo de manutenção de um time de 2 desenvolvedores com capacidade de 6 story points por semana e sem QA.",
+      "linha": 18,
+      "memorial": [
+        "base técnica (baixo) = 2.00",
+        "- esforço 1.0 SP (0.80) = 1.20"
+      ],
+      "nome": "Redefining name 'dry_run' from outer scope (line 108)",
+      "perguntas_questionario": [],
+      "pontuacao": 1.2,
+      "prioridade": "Baixa",
+      "prioridade_tecnica": "baixo",
+      "risco": "Baixo",
+      "valor": "Manutenibilidade — reduz o risco da saída do dev em 6 semanas"
+    },
+    {
+      "alcancavel": true,
+      "arquivo": "sync_data.py",
+      "categoria": "Manutenibilidade",
+      "conceito": "broad_exception",
+      "descricao": "Catching too general exception Exception",
+      "esforco_sp": 1.0,
+      "ferramentas": [
+        "pylint"
+      ],
+      "id": "DT-37",
+      "impacto": "Aumenta o custo de manutenção de um time de 2 desenvolvedores com capacidade de 6 story points por semana e sem QA.",
+      "linha": 25,
+      "memorial": [
+        "base técnica (baixo) = 2.00",
+        "- esforço 1.0 SP (0.80) = 1.20"
+      ],
+      "nome": "Captura de exceção genérica demais",
+      "perguntas_questionario": [],
+      "pontuacao": 1.2,
+      "prioridade": "Baixa",
+      "prioridade_tecnica": "baixo",
+      "risco": "Baixo",
+      "valor": "Confiabilidade — evita erro de faturamento"
+    },
+    {
+      "alcancavel": true,
+      "arquivo": "sync_data.py",
+      "categoria": "Manutenibilidade",
+      "conceito": "broad_exception",
+      "descricao": "Catching too general exception Exception",
+      "esforco_sp": 1.0,
+      "ferramentas": [
+        "pylint"
+      ],
+      "id": "DT-38",
+      "impacto": "Aumenta o custo de manutenção de um time de 2 desenvolvedores com capacidade de 6 story points por semana e sem QA.",
+      "linha": 72,
+      "memorial": [
+        "base técnica (baixo) = 2.00",
+        "- esforço 1.0 SP (0.80) = 1.20"
+      ],
+      "nome": "Captura de exceção genérica demais",
+      "perguntas_questionario": [],
+      "pontuacao": 1.2,
+      "prioridade": "Baixa",
+      "prioridade_tecnica": "baixo",
+      "risco": "Baixo",
+      "valor": "Confiabilidade — evita erro de faturamento"
+    },
+    {
+      "alcancavel": true,
+      "arquivo": "sync_data.py",
+      "categoria": "Manutenibilidade",
+      "conceito": "swallowed_exception",
+      "descricao": "Try, Except, Pass detected.",
+      "esforco_sp": 1.0,
+      "ferramentas": [
+        "bandit"
+      ],
+      "id": "DT-39",
+      "impacto": "Falha silenciosa: a fatura é calculada e não é gravada, sem ninguém saber. Sem monitoramento, o erro aparece na contestação do cliente.",
+      "linha": 72,
+      "memorial": [
+        "base técnica (baixo) = 2.00",
+        "- esforço 1.0 SP (0.80) = 1.20"
+      ],
+      "nome": "Exceção engolida silenciosamente",
+      "perguntas_questionario": [],
+      "pontuacao": 1.2,
+      "prioridade": "Baixa",
+      "prioridade_tecnica": "baixo",
+      "risco": "Baixo",
+      "valor": "Confiabilidade — evita erro de faturamento"
+    },
+    {
+      "alcancavel": true,
+      "arquivo": "sync_data.py",
+      "categoria": "Manutenibilidade",
+      "conceito": "pylint:W0621",
+      "descricao": "Redefining name 'dry_run' from outer scope (line 108)",
+      "esforco_sp": 1.0,
+      "ferramentas": [
+        "pylint"
+      ],
+      "id": "DT-40",
+      "impacto": "Aumenta o custo de manutenção de um time de 2 desenvolvedores com capacidade de 6 story points por semana e sem QA.",
+      "linha": 77,
+      "memorial": [
+        "base técnica (baixo) = 2.00",
+        "- esforço 1.0 SP (0.80) = 1.20"
+      ],
+      "nome": "Redefining name 'dry_run' from outer scope (line 108)",
+      "perguntas_questionario": [],
+      "pontuacao": 1.2,
+      "prioridade": "Baixa",
+      "prioridade_tecnica": "baixo",
+      "risco": "Baixo",
+      "valor": "Manutenibilidade — reduz o risco da saída do dev em 6 semanas"
+    },
+    {
+      "alcancavel": true,
+      "arquivo": "sync_data.py",
+      "categoria": "Manutenibilidade",
+      "conceito": "broad_exception",
+      "descricao": "Catching too general exception Exception",
+      "esforco_sp": 1.0,
+      "ferramentas": [
+        "pylint"
+      ],
+      "id": "DT-41",
+      "impacto": "Aumenta o custo de manutenção de um time de 2 desenvolvedores com capacidade de 6 story points por semana e sem QA.",
+      "linha": 85,
+      "memorial": [
+        "base técnica (baixo) = 2.00",
+        "- esforço 1.0 SP (0.80) = 1.20"
+      ],
+      "nome": "Captura de exceção genérica demais",
+      "perguntas_questionario": [],
+      "pontuacao": 1.2,
+      "prioridade": "Baixa",
+      "prioridade_tecnica": "baixo",
+      "risco": "Baixo",
+      "valor": "Confiabilidade — evita erro de faturamento"
+    },
+    {
+      "alcancavel": false,
+      "arquivo": "app/helpers/date_helper.py",
+      "categoria": "Design",
+      "conceito": "unnecessary_else_after_return",
+      "descricao": "Unnecessary \"else\" after \"return\", remove the \"else\" and de-indent the code inside it",
+      "esforco_sp": 0.5,
+      "ferramentas": [
+        "pylint"
+      ],
+      "id": "DT-42",
+      "impacto": "Aumenta o custo de manutenção de um time de 2 desenvolvedores com capacidade de 6 story points por semana e sem QA.",
+      "linha": 15,
+      "memorial": [
+        "base técnica (baixo) = 2.00",
+        "x código morto (0.35) = 0.70",
+        "- esforço 0.5 SP (0.40) = 0.30"
+      ],
+      "nome": "else desnecessário após return",
+      "perguntas_questionario": [],
+      "pontuacao": 0.3,
+      "prioridade": "Baixa",
+      "prioridade_tecnica": "baixo",
+      "risco": "Baixo",
+      "valor": "Qualidade — acelera o time de 2 devs"
+    },
+    {
+      "alcancavel": false,
+      "arquivo": "app/helpers/date_helper.py",
+      "categoria": "Design",
+      "conceito": "unnecessary_else_after_return",
+      "descricao": "Unnecessary \"else\" after \"return\", remove the \"else\" and de-indent the code inside it",
+      "esforco_sp": 0.5,
+      "ferramentas": [
+        "pylint"
+      ],
+      "id": "DT-43",
+      "impacto": "Aumenta o custo de manutenção de um time de 2 desenvolvedores com capacidade de 6 story points por semana e sem QA.",
+      "linha": 65,
+      "memorial": [
+        "base técnica (baixo) = 2.00",
+        "x código morto (0.35) = 0.70",
+        "- esforço 0.5 SP (0.40) = 0.30"
+      ],
+      "nome": "else desnecessário após return",
+      "perguntas_questionario": [],
+      "pontuacao": 0.3,
+      "prioridade": "Baixa",
+      "prioridade_tecnica": "baixo",
+      "risco": "Baixo",
+      "valor": "Qualidade — acelera o time de 2 devs"
+    },
+    {
+      "alcancavel": false,
+      "arquivo": "app/helpers/date_helper.py",
+      "categoria": "Design",
+      "conceito": "unnecessary_else_after_return",
+      "descricao": "Unnecessary \"else\" after \"return\", remove the \"else\" and de-indent the code inside it",
+      "esforco_sp": 0.5,
+      "ferramentas": [
+        "pylint"
+      ],
+      "id": "DT-44",
+      "impacto": "Aumenta o custo de manutenção de um time de 2 desenvolvedores com capacidade de 6 story points por semana e sem QA.",
+      "linha": 68,
+      "memorial": [
+        "base técnica (baixo) = 2.00",
+        "x código morto (0.35) = 0.70",
+        "- esforço 0.5 SP (0.40) = 0.30"
+      ],
+      "nome": "else desnecessário após return",
+      "perguntas_questionario": [],
+      "pontuacao": 0.3,
+      "prioridade": "Baixa",
+      "prioridade_tecnica": "baixo",
+      "risco": "Baixo",
+      "valor": "Qualidade — acelera o time de 2 devs"
+    },
+    {
+      "alcancavel": false,
+      "arquivo": "app/helpers/date_helper.py",
+      "categoria": "Design",
+      "conceito": "unnecessary_else_after_return",
+      "descricao": "Unnecessary \"elif\" after \"return\", remove the leading \"el\" from \"elif\"",
+      "esforco_sp": 0.5,
+      "ferramentas": [
+        "pylint"
+      ],
+      "id": "DT-45",
+      "impacto": "Aumenta o custo de manutenção de um time de 2 desenvolvedores com capacidade de 6 story points por semana e sem QA.",
+      "linha": 74,
+      "memorial": [
+        "base técnica (baixo) = 2.00",
+        "x código morto (0.35) = 0.70",
+        "- esforço 0.5 SP (0.40) = 0.30"
+      ],
+      "nome": "else desnecessário após return",
+      "perguntas_questionario": [],
+      "pontuacao": 0.3,
+      "prioridade": "Baixa",
+      "prioridade_tecnica": "baixo",
+      "risco": "Baixo",
+      "valor": "Qualidade — acelera o time de 2 devs"
+    },
+    {
+      "alcancavel": false,
+      "arquivo": "app/models/billing_category.py",
+      "categoria": "Design",
+      "conceito": "unnecessary_else_after_return",
+      "descricao": "Unnecessary \"elif\" after \"return\", remove the leading \"el\" from \"elif\"",
+      "esforco_sp": 0.5,
+      "ferramentas": [
+        "pylint"
+      ],
+      "id": "DT-46",
+      "impacto": "Aumenta o custo de manutenção de um time de 2 desenvolvedores com capacidade de 6 story points por semana e sem QA.",
+      "linha": 22,
+      "memorial": [
+        "base técnica (baixo) = 2.00",
+        "x código morto (0.35) = 0.70",
+        "- esforço 0.5 SP (0.40) = 0.30"
+      ],
+      "nome": "else desnecessário após return",
+      "perguntas_questionario": [],
+      "pontuacao": 0.3,
+      "prioridade": "Baixa",
+      "prioridade_tecnica": "baixo",
+      "risco": "Baixo",
+      "valor": "Qualidade — acelera o time de 2 devs"
+    },
+    {
+      "alcancavel": false,
+      "arquivo": "app/models/billing_category.py",
+      "categoria": "Design",
+      "conceito": "unnecessary_else_after_return",
+      "descricao": "Unnecessary \"else\" after \"return\", remove the \"else\" and de-indent the code inside it",
+      "esforco_sp": 0.5,
+      "ferramentas": [
+        "pylint"
+      ],
+      "id": "DT-47",
+      "impacto": "Aumenta o custo de manutenção de um time de 2 desenvolvedores com capacidade de 6 story points por semana e sem QA.",
+      "linha": 29,
+      "memorial": [
+        "base técnica (baixo) = 2.00",
+        "x código morto (0.35) = 0.70",
+        "- esforço 0.5 SP (0.40) = 0.30"
+      ],
+      "nome": "else desnecessário após return",
+      "perguntas_questionario": [],
+      "pontuacao": 0.3,
+      "prioridade": "Baixa",
+      "prioridade_tecnica": "baixo",
+      "risco": "Baixo",
+      "valor": "Qualidade — acelera o time de 2 devs"
+    },
+    {
+      "alcancavel": false,
+      "arquivo": "app/services/notification_service.py",
+      "categoria": "Design",
+      "conceito": "unnecessary_else_after_return",
+      "descricao": "Unnecessary \"elif\" after \"return\", remove the leading \"el\" from \"elif\"",
+      "esforco_sp": 0.5,
+      "ferramentas": [
+        "pylint"
+      ],
+      "id": "DT-48",
+      "impacto": "Aumenta o custo de manutenção de um time de 2 desenvolvedores com capacidade de 6 story points por semana e sem QA.",
+      "linha": 88,
+      "memorial": [
+        "base técnica (baixo) = 2.00",
+        "x código morto (0.35) = 0.70",
+        "- esforço 0.5 SP (0.40) = 0.30"
+      ],
+      "nome": "else desnecessário após return",
+      "perguntas_questionario": [],
+      "pontuacao": 0.3,
+      "prioridade": "Baixa",
+      "prioridade_tecnica": "baixo",
+      "risco": "Baixo",
+      "valor": "Qualidade — acelera o time de 2 devs"
+    },
+    {
+      "alcancavel": false,
+      "arquivo": "app/helpers/date_helper.py",
+      "categoria": "Manutenibilidade",
+      "conceito": "broad_exception",
+      "descricao": "Catching too general exception Exception",
+      "esforco_sp": 1.0,
+      "ferramentas": [
+        "pylint"
+      ],
+      "id": "DT-49",
+      "impacto": "Aumenta o custo de manutenção de um time de 2 desenvolvedores com capacidade de 6 story points por semana e sem QA.",
+      "linha": 57,
+      "memorial": [
+        "base técnica (baixo) = 2.00",
+        "x código morto (0.35) = 0.70",
+        "- esforço 1.0 SP (0.80) = -0.10"
+      ],
+      "nome": "Captura de exceção genérica demais",
+      "perguntas_questionario": [],
+      "pontuacao": -0.1,
+      "prioridade": "Baixa",
+      "prioridade_tecnica": "baixo",
+      "risco": "Baixo",
+      "valor": "Confiabilidade — evita erro de faturamento"
+    },
+    {
+      "alcancavel": false,
+      "arquivo": "app/services/notification_service.py",
+      "categoria": "Manutenibilidade",
+      "conceito": "broad_exception",
+      "descricao": "Catching too general exception Exception",
+      "esforco_sp": 1.0,
+      "ferramentas": [
+        "pylint"
+      ],
+      "id": "DT-50",
+      "impacto": "Aumenta o custo de manutenção de um time de 2 desenvolvedores com capacidade de 6 story points por semana e sem QA.",
+      "linha": 40,
+      "memorial": [
+        "base técnica (baixo) = 2.00",
+        "x código morto (0.35) = 0.70",
+        "- esforço 1.0 SP (0.80) = -0.10"
+      ],
+      "nome": "Captura de exceção genérica demais",
+      "perguntas_questionario": [],
+      "pontuacao": -0.1,
+      "prioridade": "Baixa",
+      "prioridade_tecnica": "baixo",
+      "risco": "Baixo",
+      "valor": "Confiabilidade — evita erro de faturamento"
+    },
+    {
+      "alcancavel": false,
+      "arquivo": "app/services/notification_service.py",
+      "categoria": "Manutenibilidade",
+      "conceito": "broad_exception",
+      "descricao": "Catching too general exception Exception",
+      "esforco_sp": 1.0,
+      "ferramentas": [
+        "pylint"
+      ],
+      "id": "DT-51",
+      "impacto": "Aumenta o custo de manutenção de um time de 2 desenvolvedores com capacidade de 6 story points por semana e sem QA.",
+      "linha": 49,
+      "memorial": [
+        "base técnica (baixo) = 2.00",
+        "x código morto (0.35) = 0.70",
+        "- esforço 1.0 SP (0.80) = -0.10"
+      ],
+      "nome": "Captura de exceção genérica demais",
+      "perguntas_questionario": [],
+      "pontuacao": -0.1,
+      "prioridade": "Baixa",
+      "prioridade_tecnica": "baixo",
+      "risco": "Baixo",
+      "valor": "Confiabilidade — evita erro de faturamento"
+    },
+    {
+      "alcancavel": false,
+      "arquivo": "app/services/notification_service.py",
+      "categoria": "Manutenibilidade",
+      "conceito": "swallowed_exception",
+      "descricao": "Try, Except, Pass detected.",
+      "esforco_sp": 1.0,
+      "ferramentas": [
+        "bandit"
+      ],
+      "id": "DT-52",
+      "impacto": "Falha silenciosa: a fatura é calculada e não é gravada, sem ninguém saber. Sem monitoramento, o erro aparece na contestação do cliente.",
+      "linha": 49,
+      "memorial": [
+        "base técnica (baixo) = 2.00",
+        "x código morto (0.35) = 0.70",
+        "- esforço 1.0 SP (0.80) = -0.10"
+      ],
+      "nome": "Exceção engolida silenciosamente",
+      "perguntas_questionario": [],
+      "pontuacao": -0.1,
+      "prioridade": "Baixa",
+      "prioridade_tecnica": "baixo",
+      "risco": "Baixo",
+      "valor": "Confiabilidade — evita erro de faturamento"
+    },
+    {
+      "alcancavel": false,
+      "arquivo": "app/services/notification_service.py",
+      "categoria": "Manutenibilidade",
+      "conceito": "broad_exception",
+      "descricao": "Catching too general exception Exception",
+      "esforco_sp": 1.0,
+      "ferramentas": [
+        "pylint"
+      ],
+      "id": "DT-53",
+      "impacto": "Aumenta o custo de manutenção de um time de 2 desenvolvedores com capacidade de 6 story points por semana e sem QA.",
+      "linha": 62,
+      "memorial": [
+        "base técnica (baixo) = 2.00",
+        "x código morto (0.35) = 0.70",
+        "- esforço 1.0 SP (0.80) = -0.10"
+      ],
+      "nome": "Captura de exceção genérica demais",
+      "perguntas_questionario": [],
+      "pontuacao": -0.1,
+      "prioridade": "Baixa",
+      "prioridade_tecnica": "baixo",
+      "risco": "Baixo",
+      "valor": "Confiabilidade — evita erro de faturamento"
+    },
+    {
+      "alcancavel": false,
+      "arquivo": "app/services/notification_service.py",
+      "categoria": "Manutenibilidade",
+      "conceito": "swallowed_exception",
+      "descricao": "Try, Except, Pass detected.",
+      "esforco_sp": 1.0,
+      "ferramentas": [
+        "bandit"
+      ],
+      "id": "DT-54",
+      "impacto": "Falha silenciosa: a fatura é calculada e não é gravada, sem ninguém saber. Sem monitoramento, o erro aparece na contestação do cliente.",
+      "linha": 62,
+      "memorial": [
+        "base técnica (baixo) = 2.00",
+        "x código morto (0.35) = 0.70",
+        "- esforço 1.0 SP (0.80) = -0.10"
+      ],
+      "nome": "Exceção engolida silenciosamente",
+      "perguntas_questionario": [],
+      "pontuacao": -0.1,
+      "prioridade": "Baixa",
+      "prioridade_tecnica": "baixo",
+      "risco": "Baixo",
+      "valor": "Confiabilidade — evita erro de faturamento"
+    },
+    {
+      "alcancavel": false,
+      "arquivo": "app/services/notification_service.py",
+      "categoria": "Manutenibilidade",
+      "conceito": "broad_exception",
+      "descricao": "Catching too general exception Exception",
+      "esforco_sp": 1.0,
+      "ferramentas": [
+        "pylint"
+      ],
+      "id": "DT-55",
+      "impacto": "Aumenta o custo de manutenção de um time de 2 desenvolvedores com capacidade de 6 story points por semana e sem QA.",
+      "linha": 81,
+      "memorial": [
+        "base técnica (baixo) = 2.00",
+        "x código morto (0.35) = 0.70",
+        "- esforço 1.0 SP (0.80) = -0.10"
+      ],
+      "nome": "Captura de exceção genérica demais",
+      "perguntas_questionario": [],
+      "pontuacao": -0.1,
+      "prioridade": "Baixa",
+      "prioridade_tecnica": "baixo",
+      "risco": "Baixo",
+      "valor": "Confiabilidade — evita erro de faturamento"
+    },
+    {
+      "alcancavel": false,
+      "arquivo": "app/services/notification_service.py",
+      "categoria": "Manutenibilidade",
+      "conceito": "swallowed_exception",
+      "descricao": "Try, Except, Pass detected.",
+      "esforco_sp": 1.0,
+      "ferramentas": [
+        "bandit"
+      ],
+      "id": "DT-56",
+      "impacto": "Falha silenciosa: a fatura é calculada e não é gravada, sem ninguém saber. Sem monitoramento, o erro aparece na contestação do cliente.",
+      "linha": 81,
+      "memorial": [
+        "base técnica (baixo) = 2.00",
+        "x código morto (0.35) = 0.70",
+        "- esforço 1.0 SP (0.80) = -0.10"
+      ],
+      "nome": "Exceção engolida silenciosamente",
+      "perguntas_questionario": [],
+      "pontuacao": -0.1,
+      "prioridade": "Baixa",
+      "prioridade_tecnica": "baixo",
+      "risco": "Baixo",
+      "valor": "Confiabilidade — evita erro de faturamento"
+    },
+    {
+      "alcancavel": false,
+      "arquivo": "app/services/notification_service.py",
+      "categoria": "Manutenibilidade",
+      "conceito": "inconsistent_returns",
+      "descricao": "Either all return statements in a function should return an expression, or none of them should.",
+      "esforco_sp": 1.0,
+      "ferramentas": [
+        "pylint"
+      ],
+      "id": "DT-57",
+      "impacto": "Aumenta o custo de manutenção de um time de 2 desenvolvedores com capacidade de 6 story points por semana e sem QA.",
+      "linha": 86,
+      "memorial": [
+        "base técnica (baixo) = 2.00",
+        "x código morto (0.35) = 0.70",
+        "- esforço 1.0 SP (0.80) = -0.10"
+      ],
+      "nome": "Retornos inconsistentes",
+      "perguntas_questionario": [],
+      "pontuacao": -0.1,
+      "prioridade": "Baixa",
+      "prioridade_tecnica": "baixo",
+      "risco": "Baixo",
+      "valor": "Confiabilidade — evita erro de faturamento"
+    },
+    {
+      "alcancavel": false,
+      "arquivo": "app/routes/report_routes.py",
+      "categoria": "Manutenibilidade",
+      "conceito": "cyclomatic_complexity",
+      "descricao": "Cyclomatic complexity for ReportController: 6 (rank B)",
+      "esforco_sp": 3.0,
+      "ferramentas": [
+        "radon"
+      ],
+      "id": "DT-58",
+      "impacto": "Função complexa demais para alterar com segurança. O desenvolvedor que escreveu 90% do código sai em 6 semanas, e não há testes nem staging — o conhecimento sai junto com ele.",
+      "linha": 13,
+      "memorial": [
+        "base técnica (baixo) = 2.00",
+        "x código morto (0.35) = 0.70",
+        "+ caminho da release v2.1 (1.5) = 2.20",
+        "- esforço 3.0 SP (2.40) = -0.20"
+      ],
+      "nome": "Função com complexidade ciclomática alta",
+      "perguntas_questionario": [],
+      "pontuacao": -0.2,
+      "prioridade": "Baixa",
+      "prioridade_tecnica": "baixo",
+      "risco": "Baixo",
+      "valor": "Manutenibilidade — reduz o risco da saída do dev em 6 semanas"
+    },
+    {
+      "alcancavel": false,
+      "arquivo": "app/routes/report_routes.py",
+      "categoria": "Manutenibilidade",
+      "conceito": "cyclomatic_complexity",
+      "descricao": "Cyclomatic complexity for __init__: 1 (rank A)",
+      "esforco_sp": 3.0,
+      "ferramentas": [
+        "radon"
+      ],
+      "id": "DT-59",
+      "impacto": "Função complexa demais para alterar com segurança. O desenvolvedor que escreveu 90% do código sai em 6 semanas, e não há testes nem staging — o conhecimento sai junto com ele.",
+      "linha": 14,
+      "memorial": [
+        "base técnica (baixo) = 2.00",
+        "x código morto (0.35) = 0.70",
+        "+ caminho da release v2.1 (1.5) = 2.20",
+        "- esforço 3.0 SP (2.40) = -0.20"
+      ],
+      "nome": "Função com complexidade ciclomática alta",
+      "perguntas_questionario": [],
+      "pontuacao": -0.2,
+      "prioridade": "Baixa",
+      "prioridade_tecnica": "baixo",
+      "risco": "Baixo",
+      "valor": "Manutenibilidade — reduz o risco da saída do dev em 6 semanas"
+    },
+    {
+      "alcancavel": false,
+      "arquivo": "app/routes/report_routes.py",
+      "categoria": "Manutenibilidade",
+      "conceito": "cyclomatic_complexity",
+      "descricao": "Cyclomatic complexity for monthly: 12 (rank C)",
+      "esforco_sp": 3.0,
+      "ferramentas": [
+        "radon"
+      ],
+      "id": "DT-60",
+      "impacto": "Função complexa demais para alterar com segurança. O desenvolvedor que escreveu 90% do código sai em 6 semanas, e não há testes nem staging — o conhecimento sai junto com ele.",
+      "linha": 17,
+      "memorial": [
+        "base técnica (baixo) = 2.00",
+        "x código morto (0.35) = 0.70",
+        "+ caminho da release v2.1 (1.5) = 2.20",
+        "- esforço 3.0 SP (2.40) = -0.20"
+      ],
+      "nome": "Função com complexidade ciclomática alta",
+      "perguntas_questionario": [],
+      "pontuacao": -0.2,
+      "prioridade": "Baixa",
+      "prioridade_tecnica": "baixo",
+      "risco": "Baixo",
+      "valor": "Manutenibilidade — reduz o risco da saída do dev em 6 semanas"
+    },
+    {
+      "alcancavel": false,
+      "arquivo": "app/routes/report_routes.py",
+      "categoria": "Manutenibilidade",
+      "conceito": "cyclomatic_complexity",
+      "descricao": "Cyclomatic complexity for annual: 3 (rank A)",
+      "esforco_sp": 3.0,
+      "ferramentas": [
+        "radon"
+      ],
+      "id": "DT-61",
+      "impacto": "Função complexa demais para alterar com segurança. O desenvolvedor que escreveu 90% do código sai em 6 semanas, e não há testes nem staging — o conhecimento sai junto com ele.",
+      "linha": 82,
+      "memorial": [
+        "base técnica (baixo) = 2.00",
+        "x código morto (0.35) = 0.70",
+        "+ caminho da release v2.1 (1.5) = 2.20",
+        "- esforço 3.0 SP (2.40) = -0.20"
+      ],
+      "nome": "Função com complexidade ciclomática alta",
+      "perguntas_questionario": [],
+      "pontuacao": -0.2,
+      "prioridade": "Baixa",
+      "prioridade_tecnica": "baixo",
+      "risco": "Baixo",
+      "valor": "Manutenibilidade — reduz o risco da saída do dev em 6 semanas"
+    },
+    {
+      "alcancavel": false,
+      "arquivo": "app/routes/report_routes.py",
+      "categoria": "Manutenibilidade",
+      "conceito": "cyclomatic_complexity",
+      "descricao": "Cyclomatic complexity for export_for_accounting: 3 (rank A)",
+      "esforco_sp": 3.0,
+      "ferramentas": [
+        "radon"
+      ],
+      "id": "DT-62",
+      "impacto": "Função complexa demais para alterar com segurança. O desenvolvedor que escreveu 90% do código sai em 6 semanas, e não há testes nem staging — o conhecimento sai junto com ele.",
+      "linha": 97,
+      "memorial": [
+        "base técnica (baixo) = 2.00",
+        "x código morto (0.35) = 0.70",
+        "+ caminho da release v2.1 (1.5) = 2.20",
+        "- esforço 3.0 SP (2.40) = -0.20"
+      ],
+      "nome": "Função com complexidade ciclomática alta",
+      "perguntas_questionario": [],
+      "pontuacao": -0.2,
+      "prioridade": "Baixa",
+      "prioridade_tecnica": "baixo",
+      "risco": "Baixo",
+      "valor": "Manutenibilidade — reduz o risco da saída do dev em 6 semanas"
+    },
+    {
+      "alcancavel": false,
+      "arquivo": "app/routes/report_routes.py",
+      "categoria": "Manutenibilidade",
+      "conceito": "cyclomatic_complexity",
+      "descricao": "Cyclomatic complexity for monthly: 1 (rank A)",
+      "esforco_sp": 3.0,
+      "ferramentas": [
+        "radon"
+      ],
+      "id": "DT-63",
+      "impacto": "Função complexa demais para alterar com segurança. O desenvolvedor que escreveu 90% do código sai em 6 semanas, e não há testes nem staging — o conhecimento sai junto com ele.",
+      "linha": 137,
+      "memorial": [
+        "base técnica (baixo) = 2.00",
+        "x código morto (0.35) = 0.70",
+        "+ caminho da release v2.1 (1.5) = 2.20",
+        "- esforço 3.0 SP (2.40) = -0.20"
+      ],
+      "nome": "Função com complexidade ciclomática alta",
+      "perguntas_questionario": [],
+      "pontuacao": -0.2,
+      "prioridade": "Baixa",
+      "prioridade_tecnica": "baixo",
+      "risco": "Baixo",
+      "valor": "Manutenibilidade — reduz o risco da saída do dev em 6 semanas"
+    },
+    {
+      "alcancavel": false,
+      "arquivo": "app/routes/report_routes.py",
+      "categoria": "Manutenibilidade",
+      "conceito": "cyclomatic_complexity",
+      "descricao": "Cyclomatic complexity for annual: 1 (rank A)",
+      "esforco_sp": 3.0,
+      "ferramentas": [
+        "radon"
+      ],
+      "id": "DT-64",
+      "impacto": "Função complexa demais para alterar com segurança. O desenvolvedor que escreveu 90% do código sai em 6 semanas, e não há testes nem staging — o conhecimento sai junto com ele.",
+      "linha": 142,
+      "memorial": [
+        "base técnica (baixo) = 2.00",
+        "x código morto (0.35) = 0.70",
+        "+ caminho da release v2.1 (1.5) = 2.20",
+        "- esforço 3.0 SP (2.40) = -0.20"
+      ],
+      "nome": "Função com complexidade ciclomática alta",
+      "perguntas_questionario": [],
+      "pontuacao": -0.2,
+      "prioridade": "Baixa",
+      "prioridade_tecnica": "baixo",
+      "risco": "Baixo",
+      "valor": "Manutenibilidade — reduz o risco da saída do dev em 6 semanas"
+    },
+    {
+      "alcancavel": false,
+      "arquivo": "app/routes/report_routes.py",
+      "categoria": "Manutenibilidade",
+      "conceito": "cyclomatic_complexity",
+      "descricao": "Cyclomatic complexity for export_for_accounting: 1 (rank A)",
+      "esforco_sp": 3.0,
+      "ferramentas": [
+        "radon"
+      ],
+      "id": "DT-65",
+      "impacto": "Função complexa demais para alterar com segurança. O desenvolvedor que escreveu 90% do código sai em 6 semanas, e não há testes nem staging — o conhecimento sai junto com ele.",
+      "linha": 147,
+      "memorial": [
+        "base técnica (baixo) = 2.00",
+        "x código morto (0.35) = 0.70",
+        "+ caminho da release v2.1 (1.5) = 2.20",
+        "- esforço 3.0 SP (2.40) = -0.20"
+      ],
+      "nome": "Função com complexidade ciclomática alta",
+      "perguntas_questionario": [],
+      "pontuacao": -0.2,
+      "prioridade": "Baixa",
+      "prioridade_tecnica": "baixo",
+      "risco": "Baixo",
+      "valor": "Manutenibilidade — reduz o risco da saída do dev em 6 semanas"
+    },
+    {
+      "alcancavel": false,
+      "arquivo": "app/services/billing_service.py",
+      "categoria": "Manutenibilidade",
+      "conceito": "cyclomatic_complexity",
+      "descricao": "Cyclomatic complexity for BillingService: 6 (rank B)",
+      "esforco_sp": 3.0,
+      "ferramentas": [
+        "radon"
+      ],
+      "id": "DT-66",
+      "impacto": "Função complexa demais para alterar com segurança. O desenvolvedor que escreveu 90% do código sai em 6 semanas, e não há testes nem staging — o conhecimento sai junto com ele.",
+      "linha": 8,
+      "memorial": [
+        "base técnica (baixo) = 2.00",
+        "x código morto (0.35) = 0.70",
+        "+ caminho da release v2.1 (1.5) = 2.20",
+        "- esforço 3.0 SP (2.40) = -0.20"
+      ],
+      "nome": "Função com complexidade ciclomática alta",
+      "perguntas_questionario": [],
+      "pontuacao": -0.2,
+      "prioridade": "Baixa",
+      "prioridade_tecnica": "baixo",
+      "risco": "Baixo",
+      "valor": "Manutenibilidade — reduz o risco da saída do dev em 6 semanas"
+    },
+    {
+      "alcancavel": false,
+      "arquivo": "app/services/billing_service.py",
+      "categoria": "Manutenibilidade",
+      "conceito": "cyclomatic_complexity",
+      "descricao": "Cyclomatic complexity for __init__: 1 (rank A)",
+      "esforco_sp": 3.0,
+      "ferramentas": [
+        "radon"
+      ],
+      "id": "DT-67",
+      "impacto": "Função complexa demais para alterar com segurança. O desenvolvedor que escreveu 90% do código sai em 6 semanas, e não há testes nem staging — o conhecimento sai junto com ele.",
+      "linha": 9,
+      "memorial": [
+        "base técnica (baixo) = 2.00",
+        "x código morto (0.35) = 0.70",
+        "+ caminho da release v2.1 (1.5) = 2.20",
+        "- esforço 3.0 SP (2.40) = -0.20"
+      ],
+      "nome": "Função com complexidade ciclomática alta",
+      "perguntas_questionario": [],
+      "pontuacao": -0.2,
+      "prioridade": "Baixa",
+      "prioridade_tecnica": "baixo",
+      "risco": "Baixo",
+      "valor": "Manutenibilidade — reduz o risco da saída do dev em 6 semanas"
+    },
+    {
+      "alcancavel": false,
+      "arquivo": "app/services/billing_service.py",
+      "categoria": "Manutenibilidade",
+      "conceito": "cyclomatic_complexity",
+      "descricao": "Cyclomatic complexity for calculate_invoice: 10 (rank B)",
+      "esforco_sp": 3.0,
+      "ferramentas": [
+        "radon"
+      ],
+      "id": "DT-68",
+      "impacto": "Função complexa demais para alterar com segurança. O desenvolvedor que escreveu 90% do código sai em 6 semanas, e não há testes nem staging — o conhecimento sai junto com ele.",
+      "linha": 12,
+      "memorial": [
+        "base técnica (baixo) = 2.00",
+        "x código morto (0.35) = 0.70",
+        "+ caminho da release v2.1 (1.5) = 2.20",
+        "- esforço 3.0 SP (2.40) = -0.20"
+      ],
+      "nome": "Função com complexidade ciclomática alta",
+      "perguntas_questionario": [],
+      "pontuacao": -0.2,
+      "prioridade": "Baixa",
+      "prioridade_tecnica": "baixo",
+      "risco": "Baixo",
+      "valor": "Manutenibilidade — reduz o risco da saída do dev em 6 semanas"
+    },
+    {
+      "alcancavel": false,
+      "arquivo": "app/services/billing_service.py",
+      "categoria": "Manutenibilidade",
+      "conceito": "cyclomatic_complexity",
+      "descricao": "Cyclomatic complexity for generate_monthly_report: 4 (rank A)",
+      "esforco_sp": 3.0,
+      "ferramentas": [
+        "radon"
+      ],
+      "id": "DT-69",
+      "impacto": "Função complexa demais para alterar com segurança. O desenvolvedor que escreveu 90% do código sai em 6 semanas, e não há testes nem staging — o conhecimento sai junto com ele.",
+      "linha": 102,
+      "memorial": [
+        "base técnica (baixo) = 2.00",
+        "x código morto (0.35) = 0.70",
+        "+ caminho da release v2.1 (1.5) = 2.20",
+        "- esforço 3.0 SP (2.40) = -0.20"
+      ],
+      "nome": "Função com complexidade ciclomática alta",
+      "perguntas_questionario": [],
+      "pontuacao": -0.2,
+      "prioridade": "Baixa",
+      "prioridade_tecnica": "baixo",
+      "risco": "Baixo",
+      "valor": "Manutenibilidade — reduz o risco da saída do dev em 6 semanas"
+    },
+    {
+      "alcancavel": true,
+      "arquivo": "sync_data.py",
+      "categoria": "Manutenibilidade",
+      "conceito": "cyclomatic_complexity",
+      "descricao": "Cyclomatic complexity for sync_from_erp: 10 (rank B)",
+      "esforco_sp": 3.0,
+      "ferramentas": [
+        "radon"
+      ],
+      "id": "DT-70",
+      "impacto": "Função complexa demais para alterar com segurança. O desenvolvedor que escreveu 90% do código sai em 6 semanas, e não há testes nem staging — o conhecimento sai junto com ele.",
+      "linha": 18,
+      "memorial": [
+        "base técnica (baixo) = 2.00",
+        "- esforço 3.0 SP (2.40) = -0.40"
+      ],
+      "nome": "Função com complexidade ciclomática alta",
+      "perguntas_questionario": [],
+      "pontuacao": -0.4,
+      "prioridade": "Baixa",
+      "prioridade_tecnica": "baixo",
+      "risco": "Baixo",
+      "valor": "Manutenibilidade — reduz o risco da saída do dev em 6 semanas"
+    },
+    {
+      "alcancavel": true,
+      "arquivo": "sync_data.py",
+      "categoria": "Manutenibilidade",
+      "conceito": "cyclomatic_complexity",
+      "descricao": "Cyclomatic complexity for sync_from_crm: 8 (rank B)",
+      "esforco_sp": 3.0,
+      "ferramentas": [
+        "radon"
+      ],
+      "id": "DT-71",
+      "impacto": "Função complexa demais para alterar com segurança. O desenvolvedor que escreveu 90% do código sai em 6 semanas, e não há testes nem staging — o conhecimento sai junto com ele.",
+      "linha": 77,
+      "memorial": [
+        "base técnica (baixo) = 2.00",
+        "- esforço 3.0 SP (2.40) = -0.40"
+      ],
+      "nome": "Função com complexidade ciclomática alta",
+      "perguntas_questionario": [],
+      "pontuacao": -0.4,
+      "prioridade": "Baixa",
+      "prioridade_tecnica": "baixo",
+      "risco": "Baixo",
+      "valor": "Manutenibilidade — reduz o risco da saída do dev em 6 semanas"
+    },
+    {
+      "alcancavel": false,
+      "arquivo": "app/helpers/date_helper.py",
+      "categoria": "Manutenibilidade",
+      "conceito": "excessive_returns",
+      "descricao": "Too many return statements (25/6)",
+      "esforco_sp": 2.0,
+      "ferramentas": [
+        "pylint"
+      ],
+      "id": "DT-72",
+      "impacto": "Aumenta o custo de manutenção de um time de 2 desenvolvedores com capacidade de 6 story points por semana e sem QA.",
+      "linha": 8,
+      "memorial": [
+        "base técnica (baixo) = 2.00",
+        "x código morto (0.35) = 0.70",
+        "- esforço 2.0 SP (1.60) = -0.90"
+      ],
+      "nome": "Excesso de pontos de retorno",
+      "perguntas_questionario": [],
+      "pontuacao": -0.9,
+      "prioridade": "Baixa",
+      "prioridade_tecnica": "baixo",
+      "risco": "Baixo",
+      "valor": "Manutenibilidade — reduz o risco da saída do dev em 6 semanas"
+    },
+    {
+      "alcancavel": false,
+      "arquivo": "app/models/billing_category.py",
+      "categoria": "Manutenibilidade",
+      "conceito": "excessive_returns",
+      "descricao": "Too many return statements (7/6)",
+      "esforco_sp": 2.0,
+      "ferramentas": [
+        "pylint"
+      ],
+      "id": "DT-73",
+      "impacto": "Aumenta o custo de manutenção de um time de 2 desenvolvedores com capacidade de 6 story points por semana e sem QA.",
+      "linha": 19,
+      "memorial": [
+        "base técnica (baixo) = 2.00",
+        "x código morto (0.35) = 0.70",
+        "- esforço 2.0 SP (1.60) = -0.90"
+      ],
+      "nome": "Excesso de pontos de retorno",
+      "perguntas_questionario": [],
+      "pontuacao": -0.9,
+      "prioridade": "Baixa",
+      "prioridade_tecnica": "baixo",
+      "risco": "Baixo",
+      "valor": "Manutenibilidade — reduz o risco da saída do dev em 6 semanas"
+    },
+    {
+      "alcancavel": false,
+      "arquivo": "app/helpers/date_helper.py",
+      "categoria": "Manutenibilidade",
+      "conceito": "excessive_branches",
+      "descricao": "Too many branches (29/12)",
+      "esforco_sp": 3.0,
+      "ferramentas": [
+        "pylint"
+      ],
+      "id": "DT-74",
+      "impacto": "Aumenta o custo de manutenção de um time de 2 desenvolvedores com capacidade de 6 story points por semana e sem QA.",
+      "linha": 8,
+      "memorial": [
+        "base técnica (baixo) = 2.00",
+        "x código morto (0.35) = 0.70",
+        "- esforço 3.0 SP (2.40) = -1.70"
+      ],
+      "nome": "Excesso de ramificações na função",
+      "perguntas_questionario": [],
+      "pontuacao": -1.7,
+      "prioridade": "Baixa",
+      "prioridade_tecnica": "baixo",
+      "risco": "Baixo",
+      "valor": "Manutenibilidade — reduz o risco da saída do dev em 6 semanas"
+    },
+    {
+      "alcancavel": false,
+      "arquivo": "app/helpers/date_helper.py",
+      "categoria": "Manutenibilidade",
+      "conceito": "cyclomatic_complexity",
+      "descricao": "Cyclomatic complexity for format_for_display: 1 (rank A)",
+      "esforco_sp": 3.0,
+      "ferramentas": [
+        "radon"
+      ],
+      "id": "DT-75",
+      "impacto": "Função complexa demais para alterar com segurança. O desenvolvedor que escreveu 90% do código sai em 6 semanas, e não há testes nem staging — o conhecimento sai junto com ele.",
+      "linha": 87,
+      "memorial": [
+        "base técnica (baixo) = 2.00",
+        "x código morto (0.35) = 0.70",
+        "- esforço 3.0 SP (2.40) = -1.70"
+      ],
+      "nome": "Função com complexidade ciclomática alta",
+      "perguntas_questionario": [],
+      "pontuacao": -1.7,
+      "prioridade": "Baixa",
+      "prioridade_tecnica": "baixo",
+      "risco": "Baixo",
+      "valor": "Manutenibilidade — reduz o risco da saída do dev em 6 semanas"
+    },
+    {
+      "alcancavel": false,
+      "arquivo": "app/helpers/date_helper.py",
+      "categoria": "Manutenibilidade",
+      "conceito": "cyclomatic_complexity",
+      "descricao": "Cyclomatic complexity for is_valid: 2 (rank A)",
+      "esforco_sp": 3.0,
+      "ferramentas": [
+        "radon"
+      ],
+      "id": "DT-76",
+      "impacto": "Função complexa demais para alterar com segurança. O desenvolvedor que escreveu 90% do código sai em 6 semanas, e não há testes nem staging — o conhecimento sai junto com ele.",
+      "linha": 91,
+      "memorial": [
+        "base técnica (baixo) = 2.00",
+        "x código morto (0.35) = 0.70",
+        "- esforço 3.0 SP (2.40) = -1.70"
+      ],
+      "nome": "Função com complexidade ciclomática alta",
+      "perguntas_questionario": [],
+      "pontuacao": -1.7,
+      "prioridade": "Baixa",
+      "prioridade_tecnica": "baixo",
+      "risco": "Baixo",
+      "valor": "Manutenibilidade — reduz o risco da saída do dev em 6 semanas"
+    },
+    {
+      "alcancavel": false,
+      "arquivo": "app/models/billing_category.py",
+      "categoria": "Manutenibilidade",
+      "conceito": "cyclomatic_complexity",
+      "descricao": "Cyclomatic complexity for BillingCategory: 4 (rank A)",
+      "esforco_sp": 3.0,
+      "ferramentas": [
+        "radon"
+      ],
+      "id": "DT-77",
+      "impacto": "Função complexa demais para alterar com segurança. O desenvolvedor que escreveu 90% do código sai em 6 semanas, e não há testes nem staging — o conhecimento sai junto com ele.",
+      "linha": 5,
+      "memorial": [
+        "base técnica (baixo) = 2.00",
+        "x código morto (0.35) = 0.70",
+        "- esforço 3.0 SP (2.40) = -1.70"
+      ],
+      "nome": "Função com complexidade ciclomática alta",
+      "perguntas_questionario": [],
+      "pontuacao": -1.7,
+      "prioridade": "Baixa",
+      "prioridade_tecnica": "baixo",
+      "risco": "Baixo",
+      "valor": "Manutenibilidade — reduz o risco da saída do dev em 6 semanas"
+    },
+    {
+      "alcancavel": false,
+      "arquivo": "app/models/billing_category.py",
+      "categoria": "Manutenibilidade",
+      "conceito": "cyclomatic_complexity",
+      "descricao": "Cyclomatic complexity for __init__: 1 (rank A)",
+      "esforco_sp": 3.0,
+      "ferramentas": [
+        "radon"
+      ],
+      "id": "DT-78",
+      "impacto": "Função complexa demais para alterar com segurança. O desenvolvedor que escreveu 90% do código sai em 6 semanas, e não há testes nem staging — o conhecimento sai junto com ele.",
+      "linha": 6,
+      "memorial": [
+        "base técnica (baixo) = 2.00",
+        "x código morto (0.35) = 0.70",
+        "- esforço 3.0 SP (2.40) = -1.70"
+      ],
+      "nome": "Função com complexidade ciclomática alta",
+      "perguntas_questionario": [],
+      "pontuacao": -1.7,
+      "prioridade": "Baixa",
+      "prioridade_tecnica": "baixo",
+      "risco": "Baixo",
+      "valor": "Manutenibilidade — reduz o risco da saída do dev em 6 semanas"
+    },
+    {
+      "alcancavel": false,
+      "arquivo": "app/models/billing_category.py",
+      "categoria": "Manutenibilidade",
+      "conceito": "cyclomatic_complexity",
+      "descricao": "Cyclomatic complexity for get_display_name: 1 (rank A)",
+      "esforco_sp": 3.0,
+      "ferramentas": [
+        "radon"
+      ],
+      "id": "DT-79",
+      "impacto": "Função complexa demais para alterar com segurança. O desenvolvedor que escreveu 90% do código sai em 6 semanas, e não há testes nem staging — o conhecimento sai junto com ele.",
+      "linha": 12,
+      "memorial": [
+        "base técnica (baixo) = 2.00",
+        "x código morto (0.35) = 0.70",
+        "- esforço 3.0 SP (2.40) = -1.70"
+      ],
+      "nome": "Função com complexidade ciclomática alta",
+      "perguntas_questionario": [],
+      "pontuacao": -1.7,
+      "prioridade": "Baixa",
+      "prioridade_tecnica": "baixo",
+      "risco": "Baixo",
+      "valor": "Manutenibilidade — reduz o risco da saída do dev em 6 semanas"
+    },
+    {
+      "alcancavel": false,
+      "arquivo": "app/models/billing_category.py",
+      "categoria": "Manutenibilidade",
+      "conceito": "cyclomatic_complexity",
+      "descricao": "Cyclomatic complexity for get_effective_rate: 7 (rank B)",
+      "esforco_sp": 3.0,
+      "ferramentas": [
+        "radon"
+      ],
+      "id": "DT-80",
+      "impacto": "Função complexa demais para alterar com segurança. O desenvolvedor que escreveu 90% do código sai em 6 semanas, e não há testes nem staging — o conhecimento sai junto com ele.",
+      "linha": 19,
+      "memorial": [
+        "base técnica (baixo) = 2.00",
+        "x código morto (0.35) = 0.70",
+        "- esforço 3.0 SP (2.40) = -1.70"
+      ],
+      "nome": "Função com complexidade ciclomática alta",
+      "perguntas_questionario": [],
+      "pontuacao": -1.7,
+      "prioridade": "Baixa",
+      "prioridade_tecnica": "baixo",
+      "risco": "Baixo",
+      "valor": "Manutenibilidade — reduz o risco da saída do dev em 6 semanas"
+    },
+    {
+      "alcancavel": false,
+      "arquivo": "app/models/billing_category.py",
+      "categoria": "Manutenibilidade",
+      "conceito": "cyclomatic_complexity",
+      "descricao": "Cyclomatic complexity for get_most_used: 2 (rank A)",
+      "esforco_sp": 3.0,
+      "ferramentas": [
+        "radon"
+      ],
+      "id": "DT-81",
+      "impacto": "Função complexa demais para alterar com segurança. O desenvolvedor que escreveu 90% do código sai em 6 semanas, e não há testes nem staging — o conhecimento sai junto com ele.",
+      "linha": 39,
+      "memorial": [
+        "base técnica (baixo) = 2.00",
+        "x código morto (0.35) = 0.70",
+        "- esforço 3.0 SP (2.40) = -1.70"
+      ],
+      "nome": "Função com complexidade ciclomática alta",
+      "perguntas_questionario": [],
+      "pontuacao": -1.7,
+      "prioridade": "Baixa",
+      "prioridade_tecnica": "baixo",
+      "risco": "Baixo",
+      "valor": "Manutenibilidade — reduz o risco da saída do dev em 6 semanas"
+    },
+    {
+      "alcancavel": false,
+      "arquivo": "app/models/customer.py",
+      "categoria": "Manutenibilidade",
+      "conceito": "cyclomatic_complexity",
+      "descricao": "Cyclomatic complexity for Customer: 3 (rank A)",
+      "esforco_sp": 3.0,
+      "ferramentas": [
+        "radon"
+      ],
+      "id": "DT-82",
+      "impacto": "Função complexa demais para alterar com segurança. O desenvolvedor que escreveu 90% do código sai em 6 semanas, e não há testes nem staging — o conhecimento sai junto com ele.",
+      "linha": 5,
+      "memorial": [
+        "base técnica (baixo) = 2.00",
+        "x código morto (0.35) = 0.70",
+        "- esforço 3.0 SP (2.40) = -1.70"
+      ],
+      "nome": "Função com complexidade ciclomática alta",
+      "perguntas_questionario": [],
+      "pontuacao": -1.7,
+      "prioridade": "Baixa",
+      "prioridade_tecnica": "baixo",
+      "risco": "Baixo",
+      "valor": "Manutenibilidade — reduz o risco da saída do dev em 6 semanas"
+    },
+    {
+      "alcancavel": false,
+      "arquivo": "app/models/customer.py",
+      "categoria": "Manutenibilidade",
+      "conceito": "cyclomatic_complexity",
+      "descricao": "Cyclomatic complexity for __init__: 1 (rank A)",
+      "esforco_sp": 3.0,
+      "ferramentas": [
+        "radon"
+      ],
+      "id": "DT-83",
+      "impacto": "Função complexa demais para alterar com segurança. O desenvolvedor que escreveu 90% do código sai em 6 semanas, e não há testes nem staging — o conhecimento sai junto com ele.",
+      "linha": 6,
+      "memorial": [
+        "base técnica (baixo) = 2.00",
+        "x código morto (0.35) = 0.70",
+        "- esforço 3.0 SP (2.40) = -1.70"
+      ],
+      "nome": "Função com complexidade ciclomática alta",
+      "perguntas_questionario": [],
+      "pontuacao": -1.7,
+      "prioridade": "Baixa",
+      "prioridade_tecnica": "baixo",
+      "risco": "Baixo",
+      "valor": "Manutenibilidade — reduz o risco da saída do dev em 6 semanas"
+    },
+    {
+      "alcancavel": false,
+      "arquivo": "app/models/customer.py",
+      "categoria": "Manutenibilidade",
+      "conceito": "cyclomatic_complexity",
+      "descricao": "Cyclomatic complexity for get_display_name: 1 (rank A)",
+      "esforco_sp": 3.0,
+      "ferramentas": [
+        "radon"
+      ],
+      "id": "DT-84",
+      "impacto": "Função complexa demais para alterar com segurança. O desenvolvedor que escreveu 90% do código sai em 6 semanas, e não há testes nem staging — o conhecimento sai junto com ele.",
+      "linha": 12,
+      "memorial": [
+        "base técnica (baixo) = 2.00",
+        "x código morto (0.35) = 0.70",
+        "- esforço 3.0 SP (2.40) = -1.70"
+      ],
+      "nome": "Função com complexidade ciclomática alta",
+      "perguntas_questionario": [],
+      "pontuacao": -1.7,
+      "prioridade": "Baixa",
+      "prioridade_tecnica": "baixo",
+      "risco": "Baixo",
+      "valor": "Manutenibilidade — reduz o risco da saída do dev em 6 semanas"
+    },
+    {
+      "alcancavel": false,
+      "arquivo": "app/models/customer.py",
+      "categoria": "Manutenibilidade",
+      "conceito": "cyclomatic_complexity",
+      "descricao": "Cyclomatic complexity for is_high_value: 3 (rank A)",
+      "esforco_sp": 3.0,
+      "ferramentas": [
+        "radon"
+      ],
+      "id": "DT-85",
+      "impacto": "Função complexa demais para alterar com segurança. O desenvolvedor que escreveu 90% do código sai em 6 semanas, e não há testes nem staging — o conhecimento sai junto com ele.",
+      "linha": 18,
+      "memorial": [
+        "base técnica (baixo) = 2.00",
+        "x código morto (0.35) = 0.70",
+        "- esforço 3.0 SP (2.40) = -1.70"
+      ],
+      "nome": "Função com complexidade ciclomática alta",
+      "perguntas_questionario": [],
+      "pontuacao": -1.7,
+      "prioridade": "Baixa",
+      "prioridade_tecnica": "baixo",
+      "risco": "Baixo",
+      "valor": "Manutenibilidade — reduz o risco da saída do dev em 6 semanas"
+    },
+    {
+      "alcancavel": false,
+      "arquivo": "app/models/customer.py",
+      "categoria": "Manutenibilidade",
+      "conceito": "cyclomatic_complexity",
+      "descricao": "Cyclomatic complexity for get_month_total: 3 (rank A)",
+      "esforco_sp": 3.0,
+      "ferramentas": [
+        "radon"
+      ],
+      "id": "DT-86",
+      "impacto": "Função complexa demais para alterar com segurança. O desenvolvedor que escreveu 90% do código sai em 6 semanas, e não há testes nem staging — o conhecimento sai junto com ele.",
+      "linha": 35,
+      "memorial": [
+        "base técnica (baixo) = 2.00",
+        "x código morto (0.35) = 0.70",
+        "- esforço 3.0 SP (2.40) = -1.70"
+      ],
+      "nome": "Função com complexidade ciclomática alta",
+      "perguntas_questionario": [],
+      "pontuacao": -1.7,
+      "prioridade": "Baixa",
+      "prioridade_tecnica": "baixo",
+      "risco": "Baixo",
+      "valor": "Manutenibilidade — reduz o risco da saída do dev em 6 semanas"
+    },
+    {
+      "alcancavel": false,
+      "arquivo": "app/services/notification_service.py",
+      "categoria": "Manutenibilidade",
+      "conceito": "cyclomatic_complexity",
+      "descricao": "Cyclomatic complexity for NotificationService: 6 (rank B)",
+      "esforco_sp": 3.0,
+      "ferramentas": [
+        "radon"
+      ],
+      "id": "DT-87",
+      "impacto": "Função complexa demais para alterar com segurança. O desenvolvedor que escreveu 90% do código sai em 6 semanas, e não há testes nem staging — o conhecimento sai junto com ele.",
+      "linha": 8,
+      "memorial": [
+        "base técnica (baixo) = 2.00",
+        "x código morto (0.35) = 0.70",
+        "- esforço 3.0 SP (2.40) = -1.70"
+      ],
+      "nome": "Função com complexidade ciclomática alta",
+      "perguntas_questionario": [],
+      "pontuacao": -1.7,
+      "prioridade": "Baixa",
+      "prioridade_tecnica": "baixo",
+      "risco": "Baixo",
+      "valor": "Manutenibilidade — reduz o risco da saída do dev em 6 semanas"
+    },
+    {
+      "alcancavel": false,
+      "arquivo": "app/services/notification_service.py",
+      "categoria": "Manutenibilidade",
+      "conceito": "cyclomatic_complexity",
+      "descricao": "Cyclomatic complexity for __init__: 1 (rank A)",
+      "esforco_sp": 3.0,
+      "ferramentas": [
+        "radon"
+      ],
+      "id": "DT-88",
+      "impacto": "Função complexa demais para alterar com segurança. O desenvolvedor que escreveu 90% do código sai em 6 semanas, e não há testes nem staging — o conhecimento sai junto com ele.",
+      "linha": 17,
+      "memorial": [
+        "base técnica (baixo) = 2.00",
+        "x código morto (0.35) = 0.70",
+        "- esforço 3.0 SP (2.40) = -1.70"
+      ],
+      "nome": "Função com complexidade ciclomática alta",
+      "perguntas_questionario": [],
+      "pontuacao": -1.7,
+      "prioridade": "Baixa",
+      "prioridade_tecnica": "baixo",
+      "risco": "Baixo",
+      "valor": "Manutenibilidade — reduz o risco da saída do dev em 6 semanas"
+    },
+    {
+      "alcancavel": false,
+      "arquivo": "app/services/notification_service.py",
+      "categoria": "Manutenibilidade",
+      "conceito": "cyclomatic_complexity",
+      "descricao": "Cyclomatic complexity for send: 12 (rank C)",
+      "esforco_sp": 3.0,
+      "ferramentas": [
+        "radon"
+      ],
+      "id": "DT-89",
+      "impacto": "Função complexa demais para alterar com segurança. O desenvolvedor que escreveu 90% do código sai em 6 semanas, e não há testes nem staging — o conhecimento sai junto com ele.",
+      "linha": 20,
+      "memorial": [
+        "base técnica (baixo) = 2.00",
+        "x código morto (0.35) = 0.70",
+        "- esforço 3.0 SP (2.40) = -1.70"
+      ],
+      "nome": "Função com complexidade ciclomática alta",
+      "perguntas_questionario": [],
+      "pontuacao": -1.7,
+      "prioridade": "Baixa",
+      "prioridade_tecnica": "baixo",
+      "risco": "Baixo",
+      "valor": "Manutenibilidade — reduz o risco da saída do dev em 6 semanas"
+    },
+    {
+      "alcancavel": false,
+      "arquivo": "app/services/notification_service.py",
+      "categoria": "Manutenibilidade",
+      "conceito": "cyclomatic_complexity",
+      "descricao": "Cyclomatic complexity for format_message: 5 (rank A)",
+      "esforco_sp": 3.0,
+      "ferramentas": [
+        "radon"
+      ],
+      "id": "DT-90",
+      "impacto": "Função complexa demais para alterar com segurança. O desenvolvedor que escreveu 90% do código sai em 6 semanas, e não há testes nem staging — o conhecimento sai junto com ele.",
+      "linha": 86,
+      "memorial": [
+        "base técnica (baixo) = 2.00",
+        "x código morto (0.35) = 0.70",
+        "- esforço 3.0 SP (2.40) = -1.70"
+      ],
+      "nome": "Função com complexidade ciclomática alta",
+      "perguntas_questionario": [],
+      "pontuacao": -1.7,
+      "prioridade": "Baixa",
+      "prioridade_tecnica": "baixo",
+      "risco": "Baixo",
+      "valor": "Manutenibilidade — reduz o risco da saída do dev em 6 semanas"
+    },
+    {
+      "alcancavel": false,
+      "arquivo": "app/services/notification_service.py",
+      "categoria": "Manutenibilidade",
+      "conceito": "cyclomatic_complexity",
+      "descricao": "Cyclomatic complexity for build_message: 3 (rank A)",
+      "esforco_sp": 3.0,
+      "ferramentas": [
+        "radon"
+      ],
+      "id": "DT-91",
+      "impacto": "Função complexa demais para alterar com segurança. O desenvolvedor que escreveu 90% do código sai em 6 semanas, e não há testes nem staging — o conhecimento sai junto com ele.",
+      "linha": 98,
+      "memorial": [
+        "base técnica (baixo) = 2.00",
+        "x código morto (0.35) = 0.70",
+        "- esforço 3.0 SP (2.40) = -1.70"
+      ],
+      "nome": "Função com complexidade ciclomática alta",
+      "perguntas_questionario": [],
+      "pontuacao": -1.7,
+      "prioridade": "Baixa",
+      "prioridade_tecnica": "baixo",
+      "risco": "Baixo",
+      "valor": "Manutenibilidade — reduz o risco da saída do dev em 6 semanas"
+    },
+    {
+      "alcancavel": false,
+      "arquivo": "app/helpers/date_helper.py",
+      "categoria": "Manutenibilidade",
+      "conceito": "cyclomatic_complexity",
+      "descricao": "Cyclomatic complexity for handle_date: 29 (rank D)",
+      "esforco_sp": 8.0,
+      "ferramentas": [
+        "radon"
+      ],
+      "id": "DT-92",
+      "impacto": "Função complexa demais para alterar com segurança. O desenvolvedor que escreveu 90% do código sai em 6 semanas, e não há testes nem staging — o conhecimento sai junto com ele.",
+      "linha": 8,
+      "memorial": [
+        "base técnica (medio) = 4.00",
+        "x código morto (0.35) = 1.40",
+        "- esforço 8.0 SP (6.40) = -5.00"
+      ],
+      "nome": "Função com complexidade ciclomática alta",
+      "perguntas_questionario": [],
+      "pontuacao": -5.0,
+      "prioridade": "Baixa",
+      "prioridade_tecnica": "medio",
+      "risco": "Baixo",
+      "valor": "Manutenibilidade — reduz o risco da saída do dev em 6 semanas"
+    }
+  ],
+  "falsos_positivos": [
+    {
+      "conceito": "dynamic_sql",
+      "ferramentas": "bandit",
+      "justificativa": "Apenas a ocorrência da linha 205 (rota /delete) é falso positivo: a f-string interpola TABLE_MAP[thing], dicionário fechado de 4 itens definido na própria função. O usuário controla a chave, mas o valor só pode ser um dos 4 nomes de tabela — ou KeyError. Verificado à mão.",
+      "local": "app/everything.py:205"
+    }
+  ],
+  "linguagem": "python",
+  "questionario": [
+    {
+      "evidencia": "`app/everything.py:219`; `app/routes/report_routes.py:29`; `app/routes/report_routes.py:44` (+3 ocorrências)",
+      "numero": 1,
+      "ocorrencias": 6,
+      "pergunta": "O sistema é protegido contra SQL Injection?",
+      "remediacao": "Trocar toda f-string em query por placeholder `?`. 0,5 SP por ocorrência.",
+      "resposta": "**Não**"
+    },
+    {
+      "evidencia": "Nenhuma ferramenta do pipeline detecta XSS em HTML montado por f-string. Verificação manual encontrou o problema em app/everything.py:87-148 — o dashboard concatena nome de cliente sem escape, e o seed do banco já inclui um cliente chamado <script>alert(1)</script>.",
+      "numero": 2,
+      "ocorrencias": 0,
+      "pergunta": "O sistema é protegido contra Cross-Site Scripting (XSS)?",
+      "remediacao": "Escapar o output do dashboard (usar template com autoescape). 2 SP.",
+      "resposta": "**Não** (verificação manual)"
+    },
+    {
+      "evidencia": "`app/everything.py:168`",
+      "numero": 3,
+      "ocorrencias": 1,
+      "pergunta": "As senhas são armazenadas com hash seguro (bcrypt, PBKDF2 ou Argon2)?",
+      "remediacao": "Migrar para bcrypt/Argon2 com rehash no próximo login. 3 SP.",
+      "resposta": "**Não**"
+    },
+    {
+      "evidencia": "`sync_data.py:10`; `app/everything.py:6`; `app/routes/report_routes.py:103` (+2 ocorrências)",
+      "numero": 4,
+      "ocorrencias": 5,
+      "pergunta": "Credenciais e API keys estão fora do código-fonte e do repositório Git?",
+      "remediacao": "Mover segredos para variáveis de ambiente e ROTACIONAR — já estão no histórico do Git. 2 SP.",
+      "resposta": "**Não**"
+    },
+    {
+      "evidencia": "nenhum .env com valores no repositório; apenas .env.example",
+      "numero": 5,
+      "ocorrencias": 0,
+      "pergunta": "O repositório não contém arquivos .env com valores reais commitados?",
+      "remediacao": "Nenhuma ação: já conforme. Manter a regra no .gitignore.",
+      "resposta": "**Sim**"
+    },
+    {
+      "evidencia": "bandit possui a regra B201 para debug=True, mas ela não dispara aqui: `app` é importado de outro módulo e a ferramenta não consegue provar que é um objeto Flask. Verificação manual confirma debug=True em run.py:4.",
+      "numero": 6,
+      "ocorrencias": 0,
+      "pergunta": "O modo debug/desenvolvimento está desativado em produção?",
+      "remediacao": "Definir debug=False em produção. 0,5 SP, uma linha.",
+      "resposta": "**Não** (verificação manual)"
+    },
+    {
+      "evidencia": "`app/everything.py:168`",
+      "numero": 7,
+      "ocorrencias": 1,
+      "pergunta": "O código não utiliza algoritmos de hash inseguros (MD5, SHA-1)?",
+      "remediacao": "Coberto pela migração da pergunta 3 — o mesmo commit resolve as duas.",
+      "resposta": "**Não**"
+    }
+  ],
+  "repositorio": "bad-codebase-python",
+  "resumo": {
+    "achados_brutos": 97,
+    "capacidade_sp_semana": 6,
+    "debitos": 92,
+    "esforco_total_sp": 170.0,
+    "falsos_positivos_descartados": 1,
+    "grupos_apos_deduplicacao": 93,
+    "por_prioridade": {
+      "Alta": 2,
+      "Baixa": 80,
+      "Crítica": 2,
+      "Média": 8
+    }
+  }
+}

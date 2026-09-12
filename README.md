@@ -201,3 +201,125 @@ execução. Nada disso importa se você usar o container — e você deveria.
 3. **README do pipeline** explicando como rodar e como o scoring model funciona.
 
 Bônus (10%): suportar também o alvo PHP com o mesmo scoring model e o mesmo formato.
+
+---
+
+## Como rodar o pipeline
+
+```bash
+python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
+.venv/bin/python analyzer/main.py fixtures/bad-codebase-python --out analyzer/output
+```
+
+Saída: `report.md` (relatório completo, 8 seções) e `report.json`.
+
+Regenerar a entrega versionada em `docs/`:
+
+```bash
+.venv/bin/python analyzer/main.py fixtures/bad-codebase-python --out docs
+```
+
+Provar o determinismo — exigência do enunciado:
+
+```bash
+.venv/bin/python analyzer/main.py fixtures/bad-codebase-python --out /tmp/a
+.venv/bin/python analyzer/main.py fixtures/bad-codebase-python --out /tmp/b
+diff /tmp/a/report.json /tmp/b/report.json && diff /tmp/a/report.md /tmp/b/report.md
+```
+
+---
+
+## Como o scoring model funciona
+
+A priorização acontece em duas camadas, porque são duas perguntas diferentes.
+
+**Camada 1 — `scoring.py`: "quão grave é isto tecnicamente?"**
+Modelo multiplicativo de agravantes sobre atenuantes, classificando em
+`alto` / `medio` / `baixo`. Independe de contexto de negócio.
+
+**Camada 2 — `priorizacao.py`: "o que a HourTrack deve fazer primeiro?"**
+Usa o resultado da camada 1 como severidade-base e o modula pelo contexto:
+
+```
+pontuacao = base_tecnica
+          x alcancabilidade
+          x exposicao_de_dados
+          x rota_publica
+          + bonus_questionario
+          + bonus_release
+          - (esforco_sp x penalidade_por_sp)
+```
+
+Uma SQL Injection numa rota que retorna 404 é gravíssima em abstrato e não é
+urgente hoje. A camada 1 não sabe disso; a camada 2 sabe.
+
+### Os pesos e o que justifica cada um
+
+Nenhum peso entra no modelo sem a frase do `docs/business-context.md` que o
+originou — a regra está escrita em `analyzer/business_context.py`.
+
+| Fator | Valor | Frase que o justifica |
+|---|---|---|
+| Base técnica | alto 7,0 · medio 4,0 · baixo 2,0 | saída de `scoring.py` |
+| Código morto | ×0,35 | *"uptime nos últimos 6 meses: 99,1%"* — o que não executa não gera incidente hoje |
+| Expõe dados de cliente | ×1,6 | *"vazamento poderia gerar processo"* + *"dados de todos os clientes no mesmo banco sem isolamento"* |
+| Rota pública sem auth | ×1,3 | *"os clientes não sabem que o sistema não tem autenticação real"* |
+| Questionário de segurança | +4,0 (+2,0 por pergunta extra) | *"cliente enterprise... R$ 8.000/mês... respostas em 30 dias... Se fechar, dobra o MRR"* |
+| Caminho da release v2.1 | +1,5 | *"release v2.1 em 14 dias... dois clientes ameaçaram cancelar"* |
+| Penalidade por esforço | −0,8 por SP | *"capacidade real: ~6 story points por semana"* + *"não há QA"* |
+
+Faixas: Crítica ≥ 15 · Alta ≥ 10 · Média ≥ 5 · Baixa < 5.
+
+### De onde vêm as magnitudes — e o que elas não são
+
+As magnitudes **não são derivadas de dados**. São calibração contra âncoras de
+julgamento que o time declara e defende:
+
+> SQLi alcançável > MD5 em senha > segredo de produção > SQLi em código morto
+> > exceção engolida > ruído de linter
+
+Os pesos foram escolhidos para satisfazer essa ordem. A ordem é a tese; os
+números são a codificação dela. O que é defensável é a razão entre os pesos,
+não o valor absoluto — multiplicar tudo por 10 não muda o ranking.
+
+O `report.md` traz o **memorial de cálculo** de cada débito: a conta aberta,
+passo a passo. O avaliador confere em vez de acreditar.
+
+### Determinismo
+
+- Nenhum `datetime.now()`, `random` ou `hash()` (que é aleatorizado por processo).
+- `sorted()` em toda travessia de arquivos e de ferramentas.
+- IDs `DT-nn` atribuídos **depois** da ordenação; desempate por `(arquivo, linha, conceito)`.
+- Caminhos relativos ao repositório — caminho absoluto mudaria o relatório de máquina para máquina.
+- Nenhum timestamp no JSON, e `sort_keys=True`.
+- Provado por teste: `analyzer/tests/test_priorizacao.py::DeterminismoTests`.
+
+### IA no pipeline
+
+A IA **não calcula prioridade** — isso é exigência do enunciado e está travado
+por teste (`test_priorizacao_nao_importa_biblioteca_de_llm`). O módulo
+`ai_report.py` é opcional (`--ai-report`) e produz apenas uma leitura em
+linguagem natural **a partir do `report.json` já pronto**: ele lê o resultado,
+não participa dele.
+
+A seção 7 do relatório — *"o que a IA sugeriu que estava errado"* — registra os
+casos concretos em que a IA e as ferramentas erraram, e como verificamos.
+
+---
+
+## Escopo desta entrega
+
+| Item | Status |
+|---|---|
+| Relatório com os 9 campos por débito | entregue, gerado pelo pipeline |
+| CLI recebendo o path do repositório | entregue |
+| Detecção de linguagem | entregue |
+| bandit, radon, pylint via `subprocess` | entregue |
+| semgrep | opcional via `--semgrep` (exige rede) |
+| Scoring determinístico e justificado | entregue |
+| Markdown + JSON | entregue |
+| **Bônus: análise PHP (phpstan/phpmetrics)** | **fora de escopo por tempo** |
+
+A detecção de linguagem reconhece repositórios PHP e emite um aviso explícito
+de que a análise está fora de escopo — nunca um relatório de "0 débitos", que
+seria indistinguível de um repositório saudável.
