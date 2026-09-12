@@ -50,7 +50,6 @@ class ScoredFindingGroup:
     concept: str
     category: str
     classification_priority: str | None
-    validation_status: str
     score: float
     score_priority: str
     score_priority_mapped: str
@@ -64,7 +63,6 @@ class ScoredFindingGroup:
             "concept": self.concept,
             "category": self.category,
             "classification_priority": self.classification_priority,
-            "validation_status": self.validation_status,
             "score": self.score,
             "score_priority": self.score_priority,
             "score_priority_mapped": self.score_priority_mapped,
@@ -113,7 +111,6 @@ def calculate_score(classified_group: ClassifiedFindingGroup) -> ScoredFindingGr
         concept=classified_group.concept,
         category=classified_group.category,
         classification_priority=classified_group.priority,
-        validation_status=classified_group.validation_status.value,
         score=score,
         score_priority=score_priority,
         score_priority_mapped=score_priority_label(score_priority),

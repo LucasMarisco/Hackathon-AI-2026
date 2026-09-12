@@ -84,9 +84,9 @@ Objetivo: apresentar os resultados já produzidos pelo Radar de Débitos Técnic
 
 Regras obrigatórias:
 - O JSON abaixo é a única fonte de verdade. Não crie findings e não invente fatos, arquivos, linhas, causas ou impactos comprovados.
-- Preserve literalmente category, classification_priority, score, score_priority, score_priority_mapped e validation_status.
+- Preserve literalmente category, classification_priority, score, score_priority e score_priority_mapped.
 - Não recalcule score nem altere prioridades. score_priority_mapped já é a prioridade final legível: high, medium ou low.
-- Não trate needs_validation como confirmação. Use linguagem como "pode indicar" e "deve ser validado".
+- Nenhum finding está confirmado: todos vêm de análise estática, sem execução do sistema. Use linguagem como "pode indicar" e "deve ser validado".
 - Ferramentas estáticas podem gerar falsos positivos. Não execute o sistema e não proponha novas detecções.
 - Recomendações são interpretações dos dados existentes, não decisões do motor determinístico.
 

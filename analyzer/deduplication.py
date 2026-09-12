@@ -8,7 +8,7 @@ import re
 from typing import Any
 
 from concepts import CATEGORY_COMPATIBILITY, concept_for_finding
-from models import Finding, FindingKind, ValidationStatus
+from models import Finding, FindingKind
 
 
 @dataclass
@@ -18,7 +18,6 @@ class FindingGroup:
     concept: str
     representative_finding: Finding
     evidences: list[Finding]
-    validation_status: ValidationStatus = ValidationStatus.NEEDS_VALIDATION
 
     @property
     def source_tools(self) -> list[str]:
@@ -37,7 +36,6 @@ class FindingGroup:
             "evidences": [evidence.to_dict() for evidence in self.evidences],
             "source_tools": self.source_tools,
             "rule_ids": self.rule_ids,
-            "validation_status": self.validation_status.value,
         }
 
 
@@ -75,14 +73,10 @@ def deduplicate_findings(findings: list[Finding]) -> list[FindingGroup]:
                     concept=concept,
                     representative_finding=finding,
                     evidences=[finding],
-                    validation_status=finding.validation_status,
                 )
             )
         else:
             matching_group.evidences.append(finding)
-            matching_group.validation_status = _combined_validation_status(
-                matching_group.evidences
-            )
     return groups
 
 
@@ -101,19 +95,6 @@ def _can_join(group: FindingGroup, concept: str, finding: Finding) -> bool:
     if not _locations_overlap(representative, finding):
         return False
     return _evidence_compatible(representative, finding)
-
-
-def _combined_validation_status(
-    evidences: list[Finding],
-) -> ValidationStatus:
-    statuses = {evidence.validation_status for evidence in evidences}
-    if ValidationStatus.NEEDS_VALIDATION in statuses:
-        return ValidationStatus.NEEDS_VALIDATION
-    if statuses == {ValidationStatus.ENVIRONMENTAL}:
-        return ValidationStatus.ENVIRONMENTAL
-    if statuses == {ValidationStatus.CONFIRMED}:
-        return ValidationStatus.CONFIRMED
-    return ValidationStatus.NEEDS_VALIDATION
 
 
 def _locations_overlap(left: Finding, right: Finding) -> bool:

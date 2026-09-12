@@ -23,7 +23,6 @@ class AiReportTests(unittest.TestCase):
                     "concept": "dynamic_sql",
                     "category": "security",
                     "classification_priority": "critical",
-                    "validation_status": "needs_validation",
                     "score": 3456.0,
                     "score_priority": "alto",
                     "score_priority_mapped": "high",

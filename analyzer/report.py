@@ -37,19 +37,18 @@ def render_markdown(results: list[ScoredFindingGroup]) -> str:
         "",
         f"Scored groups: {summary['scored_groups']}",
         "",
-        "| ID | conceito | categoria | score | prioridade V1 | prioridade scoring | status |",
-        "|---|---|---|---:|---|---|---|",
+        "| ID | conceito | categoria | score | prioridade V1 | prioridade scoring |",
+        "|---|---|---|---:|---|---|",
     ]
     for result in results:
         lines.append(
-            "| {group_id} | {concept} | {category} | {score:.2f} | {v1} | {scoring} | {status} |".format(
+            "| {group_id} | {concept} | {category} | {score:.2f} | {v1} | {scoring} |".format(
                 group_id=result.group_id,
                 concept=result.concept,
                 category=result.category,
                 score=result.score,
                 v1=result.classification_priority or "sem prioridade",
                 scoring=score_priority_label(result.score_priority),
-                status=result.validation_status,
             )
         )
     lines.extend(

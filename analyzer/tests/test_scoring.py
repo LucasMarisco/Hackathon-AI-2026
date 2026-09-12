@@ -3,7 +3,7 @@ from unittest.mock import patch
 
 from classification import classify_group
 from deduplication import FindingGroup
-from models import Finding, FindingKind, ValidationStatus
+from models import Finding, FindingKind
 from scoring import calculate_score, notes_for_group, score_priority_label
 
 
@@ -16,7 +16,6 @@ class ScoringTests(unittest.TestCase):
         kind=FindingKind.FINDING,
         metric_value=None,
         severity=None,
-        status=ValidationStatus.NEEDS_VALIDATION,
     ):
         finding = Finding(
             source_tool="radon" if kind == FindingKind.METRIC else "bandit",
@@ -28,14 +27,12 @@ class ScoringTests(unittest.TestCase):
             kind=kind,
             metric_value=metric_value,
             severity=severity,
-            validation_status=status,
         )
         return classify_group(
             FindingGroup(
                 concept=concept,
                 representative_finding=finding,
                 evidences=[finding],
-                validation_status=status,
             )
         )
 
@@ -77,9 +74,8 @@ class ScoringTests(unittest.TestCase):
         self.assertEqual(unused.score_priority, "baixo")
         self.assertEqual(environmental.score_priority, "medio")
 
-    def test_needs_validation_does_not_reduce_score(self):
+    def test_dynamic_sql_scores_above_high_threshold(self):
         result = calculate_score(self.make_group("dynamic_sql"))
-        self.assertEqual(result.validation_status, "needs_validation")
         self.assertGreater(result.score, 300)
 
     def test_missing_notes_are_neutral_and_zero_denominator_is_protected(self):

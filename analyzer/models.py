@@ -12,14 +12,6 @@ class FindingKind(str, Enum):
     METRIC = "metric"
 
 
-class ValidationStatus(str, Enum):
-    """Indicates how much interpretation has been applied to a tool result."""
-
-    CONFIRMED = "confirmed"
-    NEEDS_VALIDATION = "needs_validation"
-    ENVIRONMENTAL = "environmental"
-
-
 @dataclass
 class Finding:
     """Language-independent representation of one normalized tool result.
@@ -40,7 +32,6 @@ class Finding:
     kind: FindingKind = FindingKind.FINDING
     metric_value: int | float | None = None
     threshold: int | float | None = None
-    validation_status: ValidationStatus = ValidationStatus.NEEDS_VALIDATION
     raw_data: dict[str, Any] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
@@ -66,6 +57,5 @@ class Finding:
             "kind": self.kind.value,
             "metric_value": self.metric_value,
             "threshold": self.threshold,
-            "validation_status": self.validation_status.value,
             "raw_data": self.raw_data,
         }

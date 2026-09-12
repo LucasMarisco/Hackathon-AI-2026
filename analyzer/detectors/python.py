@@ -81,8 +81,9 @@ def parse_pylint(data: Sequence[Mapping[str, Any]]) -> list[Finding]:
     Pylint's message type is preserved as ``severity``. The category mapping is
     intentionally small: errors describe correctness, while warnings,
     refactors, conventions, and informational messages describe maintainability.
-    ``import-error`` remains ``needs_validation`` because this parser cannot
-    prove whether the missing import is an analysis-environment issue.
+    ``import-error`` is left for the classification layer to categorize,
+    because this parser cannot prove whether the missing import is a real
+    defect or an artifact of the analysis environment.
     """
 
     messages = _mapping_list(data, "Pylint")
