@@ -15,9 +15,16 @@ metricas: tempo, impacto financeiro, impacto na equipe, saber do cliente, segura
 
 prioridade= impacto financeiro \* risco segurança \* risco de aumentar o problema \* impacto na imagem da empresa \* impacto emocional/tempo  \* saber do cliente
 
-def prioridade(financeiro, segurança, aumento_problema, imagem_empresa, emocional, tempo, saber_cliente=1 ):
- risco= financeiro* segurança* aumento_problema* imagem_empresa* emocional / (tempo* saber_cliente)
- return risco 
+def prioridade(financeiro, segurança, aumento_problema, imagem_empresa, emocional, tempo, custo_tempo, saber_cliente=1 ):
+ risco= financeiro* segurança* aumento_problema* imagem_empresa* emocional / (tempo* custo_tempo * saber_cliente)
+ if risco > 300:
+  risco_quantitativo='alto'
+ elif risco>200 and risco<= 300:
+  risco_quantitativo='medio'
+ else:
+  risco_quantitativo='baixo'
+
+ return risco , risco_quantitativo
  
 impacto: 
 
