@@ -13,11 +13,11 @@ from classification import ClassifiedFindingGroup
 # Estes são os pesos globais. Ajustem conforme a estratégia de vocês.
 # ====================================================================
 PESOS_AGRAVANTES: dict[str, float] = {
-    "financeiro": 1.0,
+    "financeiro": 2.0, #1.0,
     "seguranca": 3.0, #2.5,
-    "aumento_problema": 1.2,
+    "aumento_problema": 1.0, #1.2,
     "imagem_empresa": 1.5,
-    "emocional": 0.8,
+    "emocional": 0.5, #0,8,
 }
 
 # Parâmetros mortos removidos. O único atenuante real é o esforço.
@@ -145,17 +145,17 @@ def notes_for_group(classified_group: ClassifiedFindingGroup) -> dict[str, float
     
     if concept in _SECURITY_CONCEPTS or category == "security":
         notes = {
-            "financeiro": 4.0 * peso_sev,
+            "financeiro": 5.0 * peso_sev,
             "seguranca": 5.0 * peso_sev,
             "aumento_problema": 4.0 * peso_sev,
             "imagem_empresa": 4.0 * peso_sev,
-            "emocional": 3.0 * peso_sev,
+            "emocional": 1.0 * peso_sev,
         }
         tempo = 1.0  # Rápido de arrumar, mantém score alto para a auditoria de 30 dias
 
     elif concept == "cyclomatic_complexity" or category == "maintainability":
         notes = {
-            "financeiro": 2.0 * peso_sev,
+            "financeiro": 1.0 * peso_sev,
             "seguranca": 1.0 * peso_sev,
             "aumento_problema": 4.0 * peso_sev,
             "imagem_empresa": 1.0 * peso_sev,
