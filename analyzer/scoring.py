@@ -165,9 +165,9 @@ def notes_for_group(classified_group: ClassifiedFindingGroup) -> dict[str, float
 
     elif category == "reliability":
         notes = {
-            "financeiro": 3.0 * peso_sev,
-            "seguranca": 2.0 * peso_sev,
-            "aumento_problema": 3.0 * peso_sev,
+            "financeiro": 2.0 * peso_sev,
+            "seguranca": 1.0 * peso_sev,
+            "aumento_problema": 4.0 * peso_sev,
             "imagem_empresa": 3.0 * peso_sev,
             "emocional": 2.0 * peso_sev,
         }
