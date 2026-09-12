@@ -289,6 +289,25 @@ def render_markdown(resultado: ResultadoAnalise) -> str:
         )
     linhas.append("")
 
+    # --- 7b. o que nenhuma ferramenta encontrou ---
+    linhas += [
+        "## 7b. O que nenhuma ferramenta encontrou",
+        "",
+        "Análise estática enxerga padrões sintáticos. Os achados abaixo são "
+        "defeitos de **regra de negócio**: o código roda, não gera exceção, e "
+        "produz o número errado. Vieram de leitura manual do fluxo.",
+        "",
+        "| Achado | Local | O que está errado | Impacto no negócio | Por que a ferramenta não acha |",
+        "|---|---|---|---|---|",
+    ]
+    for item in curadoria.ACHADOS_DE_LEITURA:
+        linhas.append(
+            f"| **{_esc(item['titulo'])}** | `{_esc(item['local'])}` "
+            f"| {_esc(item['o_que'])} | {_esc(item['impacto'])} "
+            f"| {_esc(item['porque_ferramenta_nao_acha'])} |"
+        )
+    linhas.append("")
+
     # --- 8. roadmap ---
     plano, fora = montar_roadmap(debitos)
     linhas += [
@@ -354,6 +373,7 @@ def report_payload(resultado: ResultadoAnalise) -> dict[str, Any]:
             "ambiente_de_analise": resultado.achados_ambientais,
         },
         "auditoria_da_ia": [dict(item) for item in curadoria.AUDITORIA_DA_IA],
+        "achados_de_leitura_manual": [dict(i) for i in curadoria.ACHADOS_DE_LEITURA],
         "alcancabilidade": resultado.mapa_alcancabilidade,
         "avisos_ferramentas": resultado.avisos_ferramentas,
     }

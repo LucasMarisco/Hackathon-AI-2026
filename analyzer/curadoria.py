@@ -1,22 +1,8 @@
-"""Julgamento humano verificado — a curadoria do time.
 
-Este arquivo é deliberadamente separado do resto: é onde mora o que NENHUMA
-ferramenta produz e nenhuma IA decide. Cada entrada foi aberta no editor,
-conferida contra o código-fonte e justificada por escrito.
-
-Fica versionado no Git para que a verificação seja auditável: quem afirmou o
-quê, com qual justificativa, em qual commit.
-"""
 
 from __future__ import annotations
 
-# ---------------------------------------------------------------------------
-# Seção obrigatória do relatório:
-# "O que a IA sugeriu que estava errado, e por quê"
-#
-# O enunciado avisa: "a IA erra. Ela inventa problemas que não existem e deixa
-# passar problemas reais. Validar o output da IA é uma habilidade — e será
-# avaliada."
+
 # ---------------------------------------------------------------------------
 AUDITORIA_DA_IA: tuple[dict[str, str], ...] = (
     {
@@ -87,10 +73,7 @@ AUDITORIA_DA_IA: tuple[dict[str, str], ...] = (
     },
 )
 
-# ---------------------------------------------------------------------------
-# Planos de remediação por pergunta do questionário de segurança.
-# Esforço em story points, na capacidade real de 6 SP/semana.
-# ---------------------------------------------------------------------------
+
 REMEDIACAO_QUESTIONARIO: dict[int, str] = {
     1: "Trocar toda f-string em query por placeholder `?`. 0,5 SP por ocorrência.",
     2: "Escapar o output do dashboard (usar template com autoescape). 2 SP.",
@@ -111,9 +94,7 @@ PERGUNTAS_QUESTIONARIO: dict[int, str] = {
     7: "O código não utiliza algoritmos de hash inseguros (MD5, SHA-1)?",
 }
 
-# Perguntas que as ferramentas deste pipeline não conseguem responder.
-# Declarar isso é mais honesto — e mais defensável — do que responder "Sim"
-# por ausência de achado.
+
 PERGUNTAS_NAO_COBERTAS: dict[int, str] = {
     2: (
         "Nenhuma ferramenta do pipeline detecta XSS em HTML montado por "
@@ -129,3 +110,104 @@ PERGUNTAS_NAO_COBERTAS: dict[int, str] = {
         "run.py:4."
     ),
 }
+
+# ---------------------------------------------------------------------------
+# Achados de LEITURA MANUAL — o que nenhuma ferramenta detecta.
+#
+# Análise estática enxerga padrões sintáticos. Estes são defeitos de REGRA DE
+# NEGÓCIO: o código roda, não gera exceção, e produz o número errado. Só
+# aparecem quando alguém lê o fluxo e pergunta "isto faz sentido?".
+#
+# É a contraprova de que o pipeline não substitui leitura — ele prioriza o que
+# a leitura e as ferramentas encontram.
+# ---------------------------------------------------------------------------
+ACHADOS_DE_LEITURA: tuple[dict[str, str], ...] = (
+    {
+        "titulo": "Fatura é calculada e nunca persistida",
+        "local": "app/services/billing_service.py:70-78",
+        "o_que": (
+            "O INSERT grava numa tabela `invoices` que não existe no schema, "
+            "dentro de um `try/except: pass`. A fatura é calculada, o e-mail é "
+            "enviado ao cliente, e nada fica registrado."
+        ),
+        "impacto": (
+            "Cliente contesta a cobrança e não há registro para provar. Com 3 "
+            "dos 47 clientes respondendo por 60% da receita, uma contestação "
+            "mal resolvida é perda material."
+        ),
+        "porque_ferramenta_nao_acha": (
+            "Sintaticamente o INSERT é válido; a tabela só falta em tempo de "
+            "execução, e a exceção é engolida."
+        ),
+    },
+    {
+        "titulo": "Exportação contábil usa R$ 150/h fixo",
+        "local": "app/routes/report_routes.py:121",
+        "o_que": (
+            "O valor enviado à API da contabilidade é `hours * 150`, ignorando "
+            "o `hourly_rate` da categoria."
+        ),
+        "impacto": (
+            "Consultoria custa R$ 200/h e suporte R$ 100/h — ambos vão errados "
+            "para a contabilidade. Não é bug de software, é erro fiscal."
+        ),
+        "porque_ferramenta_nao_acha": (
+            "`150` é um número literal válido. Nenhum linter sabe que existe "
+            "uma tabela de preços que deveria ter sido consultada."
+        ),
+    },
+    {
+        "titulo": "Desconto do cliente nomeado é inalcançável",
+        "local": "app/services/billing_service.py:52-59",
+        "o_que": (
+            "A cadeia de `elif` testa `subtotal > 10000`, depois `> 5000`, e só "
+            "então o nome do cliente. O desconto de 15% do Cogna só se aplica "
+            "se ele faturar menos de R$ 5.000 no mês."
+        ),
+        "impacto": (
+            "A regra comercial existe no código e nunca se aplica ao cliente "
+            "grande para quem foi criada. Ninguém percebe porque o sistema não "
+            "reclama."
+        ),
+        "porque_ferramenta_nao_acha": (
+            "Todos os ramos são alcançáveis em tese; a inalcançabilidade vem "
+            "da faixa de valores do cliente, não da estrutura do código."
+        ),
+    },
+    {
+        "titulo": "Um GET sem autenticação dispara centenas de e-mails",
+        "local": "app/routes/report_routes.py:89-95",
+        "o_que": (
+            "`/api/reports/annual` chama `generate_monthly_report` 12 vezes; "
+            "cada chamada calcula a fatura de todos os clientes, e cada cálculo "
+            "envia e-mail. Com 47 clientes, são até 564 e-mails de fatura."
+        ),
+        "impacto": (
+            "Incidente comercial, não técnico: clientes recebem faturas falsas "
+            "em massa. Hoje contido apenas porque a rota não está registrada."
+        ),
+        "porque_ferramenta_nao_acha": (
+            "Exige seguir três níveis de chamada — rota, serviço, notificação — "
+            "e entender que o efeito colateral é envio real de e-mail."
+        ),
+    },
+    {
+        "titulo": "Sistema sem autenticação e sem isolamento entre clientes",
+        "local": "app/everything.py:152, :195",
+        "o_que": (
+            "As rotas `/save/<thing>` e `/delete/<thing>/<id>` não verificam "
+            "identidade nem autorização. Todos os clientes compartilham o mesmo "
+            "banco sem coluna de tenant."
+        ),
+        "impacto": (
+            "Qualquer pessoa com um navegador cria e apaga horas faturáveis de "
+            "qualquer um dos 47 clientes. É o débito que transforma todos os "
+            "outros em incidente: uma falha atrás de login exige credencial "
+            "roubada, a mesma em rota pública é um comando curl."
+        ),
+        "porque_ferramenta_nao_acha": (
+            "Ausência de código não é padrão detectável. Nenhum scanner reporta "
+            "a verificação que ninguém escreveu."
+        ),
+    },
+)
