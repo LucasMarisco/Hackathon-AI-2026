@@ -15,7 +15,10 @@ metricas: tempo, impacto financeiro, impacto na equipe, saber do cliente, segura
 
 prioridade= impacto financeiro \* risco segurança \* risco de aumentar o problema \* impacto na imagem da empresa \* impacto emocional/tempo  \* saber do cliente
 
-
+def prioridade(financeiro, segurança, aumento_problema, imagem_empresa, emocional, tempo, saber_cliente=1 ):
+ risco= financeiro* segurança* aumento_problema* imagem_empresa* emocional / (tempo* saber_cliente)
+ return risco 
+ 
 impacto: 
 
 - financeiro  
