@@ -18,7 +18,7 @@ except ImportError:  # Keep local execution usable before optional dependencies 
     load_dotenv = None
 
 
-MODEL_NAME = "gemini-3.8-flash"
+MODEL_NAME = "gemini-3.5-flash-lite"
 
 
 def generate_ai_report(report_path: Path, output_path: Path) -> Path:
@@ -70,7 +70,7 @@ def _load_local_environment() -> None:
 
 
 def _build_prompt(report: dict[str, Any]) -> str:
-    report_data = json.dumps(report, ensure_ascii=False, indent=2)
+    report_data = json.dumps(_prompt_report(report), ensure_ascii=False, indent=2)
     return f"""Você é um analista assistente do Radar de Débitos Técnicos da HourTrack Ltda.
 
 Contexto empresarial:
@@ -86,7 +86,7 @@ Regras obrigatórias:
 - O JSON abaixo é a única fonte de verdade. Não crie findings e não invente fatos, arquivos, linhas, causas ou impactos comprovados.
 - Preserve literalmente category, classification_priority, score, score_priority e score_priority_mapped.
 - Não recalcule score nem altere prioridades. score_priority_mapped já é a prioridade final legível: high, medium ou low.
-- Nenhum finding está confirmado: todos vêm de análise estática, sem execução do sistema. Use linguagem como "pode indicar" e "deve ser validado".
+- Todos os resultados vêm de análise estática, sem execução do sistema. Descreva-os como evidências técnicas, sem transformar hipótese em fato.
 - Ferramentas estáticas podem gerar falsos positivos. Não execute o sistema e não proponha novas detecções.
 - Recomendações são interpretações dos dados existentes, não decisões do motor determinístico.
 
@@ -98,13 +98,35 @@ Escreva em português profissional, claro e específico, usando exatamente estes
 ## 4. Confiabilidade e disponibilidade
 ## 5. Manutenibilidade e qualidade
 ## 6. Priorização
-Inclua uma tabela com ID/conceito, categoria, score, prioridade e status de validação. Inclua ferramentas quando disponíveis em factors.source_tools.
+Inclua uma tabela com ID/conceito, categoria, score e prioridades. Inclua ferramentas quando disponíveis em factors.source_tools.
 ## 7. Plano de ação
 ## 8. O que a IA sugeriu que estava errado, e por quê
 Explique que a IA recebeu resultados de ferramentas estáticas e do motor determinístico e que não corrigiu nem criou findings.
 ## 9. Limitações
-Inclua as limitações de validação, falsos positivos, problemas ambientais do PHPStan, motor determinístico e ausência de execução do sistema.
+Inclua as limitações de análise estática, possíveis falsos positivos, resultados ambientais quando indicados pelos dados, motor determinístico e ausência de execução do sistema.
 
 Dados agregados do report.json:
 {report_data}
 """
+
+
+def _prompt_report(report: dict[str, Any]) -> dict[str, Any]:
+    """Keep the AI context focused on presentation-relevant report fields."""
+
+    results = []
+    for result in report["results"]:
+        factors = result.get("factors", {})
+        results.append(
+            {
+                "group_id": result.get("group_id"),
+                "concept": result.get("concept"),
+                "category": result.get("category"),
+                "classification_priority": result.get("classification_priority"),
+                "score": result.get("score"),
+                "score_priority": result.get("score_priority"),
+                "score_priority_mapped": result.get("score_priority_mapped"),
+                "source_tools": factors.get("source_tools", []),
+                "evidence_count": factors.get("evidence_count"),
+            }
+        )
+    return {"summary": report["summary"], "results": results}

@@ -6,7 +6,7 @@ from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import patch
 
-from ai_report import generate_ai_report
+from ai_report import _build_prompt, _prompt_report, generate_ai_report
 
 
 class AiReportTests(unittest.TestCase):
@@ -50,7 +50,7 @@ class AiReportTests(unittest.TestCase):
         client.assert_called_once_with(api_key="test-key")
 
     def test_missing_api_key_does_not_write_ai_report(self):
-        with patch.dict(os.environ, {}, clear=True):
+        with patch.dict(os.environ, {}, clear=True), patch("ai_report.load_dotenv"):
             with self.assertRaisesRegex(RuntimeError, "GEMINI_API_KEY"):
                 generate_ai_report(self.report_path, self.output_path)
         self.assertFalse(self.output_path.exists())
@@ -82,6 +82,36 @@ class AiReportTests(unittest.TestCase):
         ):
             generate_ai_report(self.report_path, self.output_path)
         self.assertEqual(self.report_path.read_bytes(), original)
+
+    def test_prompt_uses_only_current_deterministic_fields(self):
+        prompt = _build_prompt(self.report)
+        self.assertIn("score_priority_mapped", prompt)
+        self.assertIn("source_tools", prompt)
+        self.assertNotIn("validation_status", prompt)
+        self.assertNotIn("status de validação", prompt)
+        self.assertNotIn("DEFAULT_PASSWORD", prompt)
+
+    def test_prompt_drops_repeated_scoring_details(self):
+        report = {
+            **self.report,
+            "results": [
+                {
+                    **self.report["results"][0],
+                    "notes": {"financeiro": 4.0},
+                    "formula": "private formula",
+                    "factors": {
+                        "source_tools": ["bandit"],
+                        "evidence_count": 2,
+                        "aggravating_weights": {"seguranca": 2.5},
+                    },
+                }
+            ],
+        }
+        projected = _prompt_report(report)
+        self.assertNotIn("notes", projected["results"][0])
+        self.assertNotIn("formula", projected["results"][0])
+        self.assertNotIn("aggravating_weights", projected["results"][0])
+        self.assertIn("source_tools", projected["results"][0])
 
 
 if __name__ == "__main__":
