@@ -93,9 +93,28 @@ CONCEPT_GUIDANCE: dict[str, dict[str, str]] = {
     },
 }
 
+BUSINESS_CONTEXT: dict[str, str] = {
+    "dynamic_sql": "Em uma SaaS B2B com cliente enterprise e avaliação de segurança próxima, uma consulta mal parametrizada pode aumentar o risco de incidente, perda de confiança ou impacto em dados de clientes.",
+    "hardcoded_secret": "Na HourTrack, uma credencial exposta pode afetar integrações ou dados de clientes e elevar o risco durante o questionário de segurança empresarial.",
+    "weak_password_hash": "Como a HourTrack processa dados de clientes, proteção inadequada de senhas pode comprometer confiança e dificultar a avaliação de segurança empresarial.",
+    "missing_timeout": "Com equipe pequena e alterações diretamente em produção, chamadas sem limite de espera podem consumir recursos e dificultar a disponibilidade para dezenas de clientes.",
+    "broad_exception": "Para uma equipe de apenas dois desenvolvedores full-stack, tratamento amplo pode esconder a origem de incidentes e aumentar o tempo de diagnóstico durante a release.",
+    "swallowed_exception": "Falhas silenciosas podem afetar operações de uma SaaS sem alertar a equipe pequena, dificultando a continuidade do atendimento aos clientes.",
+    "inconsistent_returns": "Contratos de retorno pouco claros aumentam o risco de comportamento inesperado em uma release urgente e tornam a saída do principal desenvolvedor mais difícil de absorver.",
+    "import_error": "O resultado pode ser apenas ambiental; distinguir isso rapidamente evita gastar a janela de 14 dias da release em um problema que não ocorre no ambiente real.",
+    "cyclomatic_complexity": "Complexidade elevada concentra conhecimento em poucos trechos, um risco relevante quando o principal desenvolvedor deixará a empresa em seis semanas.",
+    "excessive_branches": "Fluxos muito ramificados aumentam o esforço de revisão e teste, especialmente sem staging e com uma release próxima.",
+    "excessive_returns": "Muitos pontos de saída elevam a carga de entendimento para uma equipe pequena e podem tornar revisões urgentes menos previsíveis.",
+    "excessive_locals": "Muitas variáveis locais podem sinalizar concentração de responsabilidade, dificultando a transferência de conhecimento antes da saída do principal desenvolvedor.",
+    "unused_variable": "Resíduos de implementação aumentam ruído no código e consomem tempo de uma equipe pequena que precisa priorizar a release e o atendimento aos clientes.",
+    "shadowed_builtin": "Nomes ambíguos aumentam o custo de revisão e manutenção em uma equipe pequena, sobretudo quando alterações são feitas diretamente em produção.",
+    "unnecessary_else_after_return": "Aninhamento desnecessário reduz a clareza das revisões e pode consumir tempo limitado antes da release v2.1.",
+    "todo_comment": "Pendências sem rastreamento podem sobreviver à release e à transição de conhecimento, aumentando o risco de manutenção futura.",
+}
+
 
 def _guidance_for(concept: str) -> dict[str, str]:
-    return CONCEPT_GUIDANCE.get(
+    guidance = CONCEPT_GUIDANCE.get(
         concept,
         {
             "description": "Resultado técnico identificado por uma ferramenta estática.",
@@ -103,6 +122,14 @@ def _guidance_for(concept: str) -> dict[str, str]:
             "recommendation": "Revisar a ocorrência e confirmar a ação adequada antes de alterar o código.",
         },
     )
+    return {
+        **guidance,
+        "technical_impact": guidance["impact"],
+        "business_impact": BUSINESS_CONTEXT.get(
+            concept,
+            "O impacto de negócio depende da validação do contexto indicado no grupo.",
+        ),
+    }
 
 
 def _result_payload(result: ScoredFindingGroup) -> dict[str, Any]:
@@ -148,25 +175,37 @@ def render_markdown(results: list[ScoredFindingGroup]) -> str:
     payload = report_payload(results)
     summary = payload["summary"]
     ordered = rank_groups(results)
+    category_counts = Counter(result.category for result in ordered)
     lines = [
         "# Radar de Débitos Técnicos — Relatório Determinístico",
         "",
         "## Resumo executivo",
         "",
-        f"O pipeline consolidou {summary['scored_groups']} grupos de débito a partir das evidências dos analisadores. A distribuição atual é **{summary['critical']} critical**, **{summary['high']} high**, **{summary['medium']} medium** e **{summary['low']} low**.",
+        f"O pipeline consolidou **{summary['scored_groups']} grupos de débito** a partir das evidências dos analisadores. A distribuição atual é **{summary['critical']} critical**, **{summary['high']} high**, **{summary['medium']} medium** e **{summary['low']} low**.",
         "",
         f"A ordem é definida pelos dois prazos da empresa: **{summary['por_tier']['release+questionario']}** grupos bloqueiam o release de 14 dias *e* respondem o questionário de segurança de 30 dias, **{summary['por_tier']['release']}** apenas bloqueiam o release, **{summary['por_tier']['questionario']}** apenas respondem o questionário e **{summary['por_tier']['sem_prazo']}** não têm prazo associado.",
+        "",
+        f"As categorias mais representadas são maintainability ({category_counts['maintainability']}), security ({category_counts['security']}) e code_quality ({category_counts['code_quality']}). Para a HourTrack, os grupos high de segurança e disponibilidade merecem investigação antes da release v2.1: a empresa atende uma base B2B, tem equipe pequena, não possui staging e possui compromissos próximos de segurança empresarial.",
         "",
         "Cada linha detalhada representa um **grupo de débito**, isto é, uma ocorrência consolidada por conceito e localização. As evidências retidas em `evidence_count` e `source_tools` mostram os resultados das ferramentas que sustentam o grupo; elas não são novos débitos.",
         "",
         "## Principais riscos",
         "",
-        "A prioridade é produzida pelo motor determinístico e segue os prazos, não o score isolado: nenhum grupo que não bloqueia o release de 14 dias fica acima de um que bloqueia, qualquer que seja o score. Por isso a coluna de score pode parecer fora de ordem — ela ordena apenas dentro do mesmo prazo. Dentro do grupo do questionário, o desempate é por esforço: o mais barato primeiro, porque concorre com o release pela mesma capacidade do time.",
+        "### Segurança",
+        "Consultas SQL dinâmicas, credenciais no código e hash inadequado de senhas não comprovam exploração ou vazamento, mas podem indicar exposição de dados ou credenciais. Devem ser revisados antes do questionário de segurança empresarial, preservando a prioridade produzida pelo scoring.",
+        "",
+        "### Disponibilidade e confiabilidade",
+        "Chamadas sem timeout e tratamentos de exceção amplos ou silenciosos podem dificultar a continuidade e o diagnóstico de falhas. Isso é especialmente relevante para uma equipe pequena que mantém uma SaaS sem staging e com alterações em produção.",
+        "",
+        "### Manutenção e qualidade",
+        "Complexidade, branches, returns e outros sinais de qualidade aumentam o custo de teste e transferência de conhecimento. A saída do principal desenvolvedor torna essa revisão importante, mas a prioridade continua sendo a do motor determinístico.",
+        "",
+        "A ordem é produzida pelo motor determinístico e segue os prazos, não o score isolado: nenhum grupo que não bloqueia o release de 14 dias fica acima de um que bloqueia, qualquer que seja o score. Por isso a coluna de score pode parecer fora de ordem — ela ordena apenas dentro do mesmo prazo. Dentro do grupo do questionário o desempate é por esforço: o mais barato primeiro, porque concorre com o release pela mesma capacidade do time.",
         "",
         "## Principais problemas",
         "",
-        "| Conceito | Descrição | Impacto potencial | Prioridade | Prazo | Score | Ferramentas |",
-        "|---|---|---|---|---|---:|---|",
+        "| Conceito | Problema | Impacto técnico | Impacto de negócio | Prioridade | Prazo | Score | Ferramentas |",
+        "|---|---|---|---|---|---|---:|---|",
     ]
     by_concept: dict[str, list[ScoredFindingGroup]] = {}
     for result in ordered:
@@ -189,21 +228,29 @@ def render_markdown(results: list[ScoredFindingGroup]) -> str:
             }
         )
         lines.append(
-            f"| {concept} | {guidance['description']} | {guidance['impact']} | {representative.priority} | {TIER_NOMES[representative.deadline_tier]} | {representative.score:.2f} | {', '.join(tools) or 'não informado'} |"
+            f"| {concept} | {guidance['description']} | {guidance['technical_impact']} | {guidance['business_impact']} | {representative.priority} | {TIER_NOMES[representative.deadline_tier]} | {representative.score:.2f} | {', '.join(tools) or 'não informado'} |"
         )
     lines.extend(
         [
             "",
             "## Plano de ação",
             "",
-            "1. **Desbloquear o release de 14 dias.** Começar pelos grupos `critical` — os que estão no caminho do código do relatório *e* respondem o questionário de segurança, então o mesmo trabalho rende nos dois prazos. Seguir pelos `high`, que bloqueiam o release mas não contam para o questionário.",
-            "2. **Responder o questionário de 30 dias.** Atacar os grupos `medium` na ordem em que aparecem: do mais barato para o mais caro. A capacidade é de ~6 story points por semana e o release consome parte dela, então o critério é quantas respostas do questionário se destravam por ponto gasto.",
-            "3. **Manutenção.** Os grupos `low` não têm prazo associado; organizar em tarefas, começando por itens recorrentes ou concentrados no mesmo módulo.",
-            "4. Para cada grupo, confirmar a evidência, definir responsável e registrar a correção sem confundir ferramentas corroborantes com novos débitos.",
+            "| Ordem | Prioridade | O que fazer | Por quê |",
+            "|---:|---|---|---|",
+            "| 1º | critical | Corrigir os grupos que estão no caminho do código do relatório **e** respondem o questionário: SQL dinâmico, credenciais no código e hash de senha. | O mesmo trabalho rende nos dois prazos — desbloqueia o release de 14 dias e já responde perguntas do questionário de 30 dias. |",
+            "| 2º | high | Corrigir o que bloqueia o release mas não conta para o questionário: chamadas sem timeout e complexidade no caminho do relatório. | Sem isso a release v2.1 não sai, e dois clientes grandes ameaçaram cancelar se atrasar. |",
+            "| 3º | medium | Responder o questionário na ordem apresentada, do mais barato para o mais caro. | A capacidade é de ~6 story points por semana e o release consome parte dela: o critério é quantas respostas se destravam por ponto gasto. |",
+            "| 4º | low | Organizar exceções, branches, returns, variáveis e pendências em tarefas de manutenção. | Sem prazo associado. Reduz custo futuro e facilita a transferência de conhecimento antes da saída do dev principal. |",
+            "",
+            "Para cada grupo, confirmar a evidência, definir responsável e registrar a correção sem confundir ferramentas corroborantes com novos débitos.",
             "",
             "## Origem das recomendações",
             "",
             "As recomendações deste relatório são explicações determinísticas baseadas no conceito e nos resultados já produzidos pelas ferramentas. Elas não alteram categoria, prioridade, score ou quantidade de grupos. Uma camada opcional de IA generativa pode interpretar o `report.json`, mas não é necessária para gerar este relatório nem é fonte de verdade.",
+            "",
+            "## Como interpretar o scoring",
+            "",
+            "O score é produzido pelo motor determinístico com os pesos, notas, fórmula e fatores preservados no `report.json`. A prioridade scoring é derivada por limiares fixos e não é recalculada nesta apresentação. A Prioridade V1 é uma classificação qualitativa independente; quando os dois campos diferem, isso representa duas visões comparáveis, não uma alteração do resultado.",
             "",
             "## Limitações",
             "",
@@ -211,6 +258,7 @@ def render_markdown(results: list[ScoredFindingGroup]) -> str:
             "- Ferramentas estáticas podem produzir falsos positivos; cada evidência deve ser revisada no contexto.",
             "- O score e as prioridades são definidos pelo motor determinístico e não são recalculados na apresentação.",
             "- Resultados ambientais, como imports não resolvidos, podem refletir configuração do ambiente de análise.",
+            "- O relatório não afirma que um problema foi explorado, que houve vazamento ou que causou incidente real.",
             "",
             "## Grupos e evidências",
             "",

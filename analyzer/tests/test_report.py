@@ -47,6 +47,8 @@ class ReportTests(unittest.TestCase):
         self.assertIn('"score_priority_mapped": "high"', payload)
         self.assertIn('"description":', payload)
         self.assertIn('"recommendation":', payload)
+        self.assertIn('"business_impact":', payload)
+        self.assertIn('"technical_impact":', payload)
         # campos de prazo tem de sobreviver ate o JSON final
         self.assertIn('"priority": "critical"', payload)
         self.assertIn('"deadline_tier": 0', payload)
@@ -57,12 +59,15 @@ class ReportTests(unittest.TestCase):
         for heading in (
             "## Resumo executivo", "## Principais problemas", "## Plano de ação",
             "## Origem das recomendações", "## Limitações", "## Grupos e evidências",
+            "## Como interpretar o scoring",
             "## Regra de ordenação",
         ):
             self.assertIn(heading, markdown)
         self.assertIn("evidence_count", markdown)
         self.assertIn("bandit, semgrep", markdown)
-        self.assertNotIn("O que a IA sugeriu", markdown)
+        self.assertIn("Impacto de negócio", markdown)
+        self.assertIn("| high |", markdown)
+        self.assertIn("Prioridade V1", markdown)
 
     def test_markdown_orders_by_deadline_tier_not_by_score(self):
         """A regra do time, verificada no render: prazo manda, score so desempata."""
@@ -81,6 +86,7 @@ class ReportTests(unittest.TestCase):
         self.assertLess(
             markdown.index("inconsistent_returns"), markdown.index("todo_comment")
         )
+        self.assertNotIn("O que a IA sugeriu", markdown)
 
 
 if __name__ == "__main__":

@@ -69,9 +69,9 @@ class ScoringTests(unittest.TestCase):
         timeout = calculate_score(self.make_group("missing_timeout", category="availability"))
         swallowed = calculate_score(self.make_group("swallowed_exception", category="reliability"))
         self.assertEqual(timeout.notes["aumento_problema"], 3.0)
-        self.assertEqual(swallowed.notes["aumento_problema"], 3.0)
-        # timeout pontua mais: mesmo produto de notas, mas custa 0.5 ponto
-        # contra 1.0 do swallowed_exception
+        # reliability foi recalibrado para 4.0 no commit 086786d
+        self.assertEqual(swallowed.notes["aumento_problema"], 4.0)
+        # timeout ainda pontua mais: custa 0.5 ponto contra 1.0 do swallowed
         self.assertGreater(timeout.score, swallowed.score)
 
     def test_complexity_29_uses_metric_value(self):
