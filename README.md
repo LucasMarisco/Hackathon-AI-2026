@@ -48,42 +48,14 @@ todos os comandos de exemplo do `docs/ferramentas.md` funcionam colando direto.
 
 Edite os arquivos no host com seu editor; rode dentro do container.
 
-### ⚠️ Não rode as ferramentas em Python 3.14
+**Não rode as ferramentas de análise no host.** A imagem é Python 3.11, que é o que
+os pins do `requirements.txt` esperam. No 3.14 do host, `pydantic==2.8.2` nem instala
+e `bandit==1.7.9` falha de um jeito silencioso (detalhe em "Pegadinhas" abaixo).
+Dentro do container, nada disso acontece.
 
-O `requirements.txt` está pinado nas versões da imagem oficial, que roda **Python
-3.11**. Duas coisas quebram em 3.14 — uma delas de forma **silenciosa e perigosa**:
-
-**1. `bandit==1.7.9` reporta zero achados em 3.14, sem erro.**
-
-Cada arquivo falha internamente com `AttributeError: 'Constant' object has no
-attribute 's'` (bandit usa `ast.Constant.s`, removido no 3.12+). O bandit então:
-
-- **sai com código 0** (parece sucesso)
-- imprime `Total issues: High: 0, Medium: 0, Low: 0`
-- no JSON, devolve `"results": []`
-- só menciona `(exception while scanning file)` no output de texto, no fim
-
-Ou seja: em 3.14 o alvo parece **livre de vulnerabilidades**. Segurança é a
-categoria de maior peso no nosso scoring (questionário do enterprise em 30 dias) —
-um falso "tudo limpo" aqui destrói o relatório inteiro e não dá nenhum sinal de erro.
-
-> **Consequência de design:** o pipeline não pode tratar "bandit saiu 0" como
-> "bandit funcionou". Vale checar `results` vazio + arquivos skipados e falhar
-> alto. Isso também cobre o requisito do briefing de degradar com elegância
-> quando a ferramenta não está disponível no ambiente de avaliação.
-
-**2. `pydantic==2.8.2` não instala em 3.14.**
-
-`pydantic-core==2.20.1` não tem wheel para cp314, cai para build do sdist via
-Rust/maturin e falha. É o único pin que impede um venv local — e note que o
-briefing pede `models.py` com **dataclass**, não pydantic. Se ninguém for usar
-pydantic de verdade, tirar esse pin destrava o venv local.
-
-**O que foi verificado em 3.14:** `radon==6.0.1` funciona e reproduz exatamente a
-tabela de CC do `docs/ferramentas.md`. `bandit` falha como descrito acima.
-`pydantic` não instala. `semgrep==1.93.0` instala (wheel tagueada até py311),
-mas **não testamos se roda correto** — assuma que não até alguém confirmar.
-`pylint==3.3.1` instala; execução em 3.14 também não testada.
+O `README` anterior pedia `Python 3.14` + venv local. Trocado por container por isso —
+se alguém quiser um venv só para autocomplete do editor, beleza, mas qualquer número
+que entre no relatório sai do container.
 
 Conclusão: use o container para qualquer número que entre no relatório. Um venv
 local serve para autocomplete e `pytest` do scoring — não para rodar as ferramentas.
@@ -167,13 +139,23 @@ Extraídas do briefing — vale reler antes de abrir PR:
   priorização são computadas pelo pipeline.
 - **As ferramentas podem não estar instaladas no ambiente de avaliação.** O pipeline
   precisa de um caminho que funcione sem `bandit`/`radon`/`pylint` — degradar com
-  elegância, não estourar exceção.
+  elegância, não estourar exceção. **E "saiu com código 0" não prova que a ferramenta
+  rodou:** o bandit consegue falhar em todos os arquivos, sair 0 e devolver
+  `"results": []` (vimos acontecer — ver "Pegadinhas"). Zero achado de segurança é um
+  resultado extraordinário num código propositalmente ruim; o pipeline devia
+  desconfiar dele, não reportá-lo. Cheque também os arquivos que a ferramenta pulou.
 - **Falso positivo desconta ponto.** Reportar como débito algo que não é problema
   real custa nota. Menos achados bem justificados > muitos achados.
 - **As regras de priorização vão no código**, comentadas ou em arquivo de config —
   não só no relatório.
 
-### Pegadinha: o `rank` do radon não bate com a tabela do briefing
+---
+
+## Pegadinhas
+
+Encontradas validando o material importado. Ambas afetam o scoring.
+
+### 1. O `rank` do radon não bate com a tabela do briefing
 
 Verificado rodando radon no fixture. A escala real do radon é `A:1-5, B:6-10,
 C:11-20, D:21-30, E:31-40, F:41+` — diferente da tabela do `docs/ferramentas.md`
@@ -187,6 +169,27 @@ Se o `scoring.py` consumir o campo `rank` do JSON do radon direto, a severidade 
 vai corresponder ao que o briefing descreve. Decidam qual escala usar, **derivem o
 rank do `complexity` numérico** em vez de confiar no campo, e documentem a escolha —
 é exatamente o tipo de decisão explícita que os 25% de "regras justificadas" premiam.
+
+### 2. O bandit sabe falhar sem falhar
+
+Rodando no host (Python 3.14, fora do container): o `bandit==1.7.9` estoura
+`AttributeError: 'Constant' object has no attribute 's'` em **todos** os arquivos
+(usa `ast.Constant.s`, removido no 3.12+) e ainda assim sai com código 0, imprime
+`High: 0, Medium: 0, Low: 0` e devolve `"results": []` no JSON. Só aparece um
+`(exception while scanning file)` no fim do output de *texto* — que o pipeline não lê.
+
+Dentro do container (3.11) isso não acontece, então **é um problema de ambiente, não
+de código nosso**. Está aqui por dois motivos:
+
+- é o motivo concreto de o container ser o caminho canônico, e de o smoke test acima
+  exigir `bandit != 0 achados`;
+- generaliza para a restrição do briefing sobre ferramenta ausente na avaliação — não
+  controlamos o ambiente do avaliador, e falha silenciosa é pior que falha ruidosa.
+
+Também verificado no host: `radon` funciona normalmente em 3.14 e reproduz a tabela
+de CC do `docs/ferramentas.md`; `pydantic==2.8.2` não instala (sem wheel cp314 para
+`pydantic-core`, build Rust falha); `semgrep` e `pylint` instalam, mas não testamos a
+execução. Nada disso importa se você usar o container — e você deveria.
 
 ---
 
