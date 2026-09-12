@@ -1,43 +1,77 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+
+# ==========================================================
+# ⚙️ PAINEL DE CONFIGURAÇÃO (ADICIONE, REMOVA OU EDITE AQUI)
+# ==========================================================
+
+# Parâmetros que multiplicam no numerador (quanto maior, pior o débito)
+PESOS_AGRAVANTES = {
+    "financeiro": 1.0,
+    "segurança": 2.5,          # Foco na auditoria enterprise
+    "aumento_problema": 1.2,
+    "imagem_empresa": 1.5,
+    "emocional": 0.8,
+}
+
+# Parâmetros que multiplicam no denominador (quanto maior, mais atenua/reduz a prioridade)
+PESOS_ATENUANTES = {
+    "tempo": 1.0,
+    "custo_tempo": 1.0,
+    "saber_cliente": 1.0,      # Default: 1.0 caso não seja passado
+}
+
+# Limiares de classificação
+LIMIAR_ALTO = 300.0
+LIMIAR_MEDIO = 200.0
+
+
+# ==========================================================
+# 📦 ESTRUTURA DO DÉBITO TÉCNICO
+# ==========================================================
 
 @dataclass
 class DebitoTecnico:
     id: str
     nome: str
-    # Variáveis do numerador (fatores de impacto)
-    financeiro: float
-    segurança: float
-    aumento_problema: float
-    imagem_empresa: float
-    emocional: float
-    # Variáveis do denominador (fatores redutores/atenuantes)
-    tempo: float
-    custo_tempo: float
-    saber_cliente: float = 1.0
     
-    # Campos calculados
+    # Dicionários dinâmicos com as notas atribuídas (ex: escala de 1 a 5)
+    agravantes: dict[str, float] = field(default_factory=dict)
+    atenuantes: dict[str, float] = field(default_factory=dict)
+    
+    # Resultados calculados
     risco: float = 0.0
     risco_quantitativo: str = ""
 
     def calcular_prioridade(self):
-        # Sua fórmula original
-        denominador = self.tempo * self.custo_tempo * self.saber_cliente
-        
-        # Evita divisão por zero caso algum tempo seja 0
-        if denominador == 0:
-            denominador = 0.0001
+        # --------------------------------------------------
+        # 📈 1. PRODUTÓRIO DOS AGRAVANTES (NUMERADOR)
+        # --------------------------------------------------
+        prod_agravantes = 1.0
+        for fator, peso in PESOS_AGRAVANTES.items():
+            # Pega a nota informada; se não foi passada, assume valor neutro 1.0
+            nota = self.agravantes.get(fator, 1.0)
+            prod_agravantes *= (nota * peso)
 
-        self.risco = (
-            self.financeiro
-            * self.segurança
-            * self.aumento_problema
-            * self.imagem_empresa
-            * self.emocional
-        ) / denominador
+        # --------------------------------------------------
+        # 📉 2. PRODUTÓRIO DOS ATENUANTES (DENOMINADOR)
+        # --------------------------------------------------
+        prod_atenuantes = 1.0
+        for fator, peso in PESOS_ATENUANTES.items():
+            nota = self.atenuantes.get(fator, 1.0)
+            prod_atenuantes *= (nota * peso)
 
-        if self.risco > 300:
+        # Proteção contra divisão por zero
+        if prod_atenuantes == 0:
+            prod_atenuantes = 0.0001
+
+        # --------------------------------------------------
+        # 🎯 3. SCORE E CLASSIFICAÇÃO DETERMINÍSTICA
+        # --------------------------------------------------
+        self.risco = prod_agravantes / prod_atenuantes
+
+        if self.risco > LIMIAR_ALTO:
             self.risco_quantitativo = "alto"
-        elif 200 < self.risco <= 300:
+        elif self.risco > LIMIAR_MEDIO:
             self.risco_quantitativo = "medio"
         else:
             self.risco_quantitativo = "baixo"
@@ -45,36 +79,46 @@ class DebitoTecnico:
         return self.risco, self.risco_quantitativo
 
 
-# --- TESTE COM DADOS DE EXEMPLO ---
+# ==========================================================
+# 🧪 EXEMPLOS DE TESTE
+# ==========================================================
 
+# Exemplo 1: Falha crítica onde preenchemos todos os fatores
 debito_1 = DebitoTecnico(
     id="DT-01",
-    nome="Vazamento de dados por falta de autenticação",
-    financeiro=5,
-    segurança=5,
-    aumento_problema=4,
-    imagem_empresa=5,
-    emocional=4,
-    tempo=2,
-    custo_tempo=2,
-    saber_cliente=1  # Cliente ainda não descobriu
+    nome="Vazamento de credenciais de clientes",
+    agravantes={
+        "financeiro": 5,
+        "segurança": 5,
+        "aumento_problema": 4,
+        "imagem_empresa": 5,
+        "emocional": 3
+    },
+    atenuantes={
+        "tempo": 1,
+        "custo_tempo": 1,
+        "saber_cliente": 1
+    }
 )
 
+# Exemplo 2: Débito onde omitimos 'saber_cliente' (assume 1.0 automático)
 debito_2 = DebitoTecnico(
     id="DT-02",
-    nome="Refatoração de CSS/Layout",
-    financeiro=1,
-    segurança=1,
-    aumento_problema=1,
-    imagem_empresa=2,
-    emocional=1,
-    tempo=3,
-    custo_tempo=2
-    # saber_cliente assume o padrão 1.0 automaticamente
+    nome="Refatoração de CSS/Layout legado",
+    agravantes={
+        "financeiro": 1,
+        "segurança": 1,
+        "aumento_problema": 1,
+        "imagem_empresa": 1,
+        "emocional": 2
+    },
+    atenuantes={
+        "tempo": 3,
+        "custo_tempo": 2
+    }
 )
 
-# Executando o cálculo
 for dt in [debito_1, debito_2]:
     score, nivel = dt.calcular_prioridade()
     print(f"[{dt.id}] {dt.nome}")
-    print(f"   Score Numérico: {score:.2f} | Prioridade: {nivel.upper()}\n")
+    print(f"   Score: {score:.2f} | Prioridade: {nivel.upper()}\n")
